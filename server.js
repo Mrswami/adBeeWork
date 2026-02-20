@@ -31,10 +31,18 @@ app.use('/api/calendar', calendarRoutes);
 app.use('/api/schedules', schedulesRoutes);
 app.use('/api/user', userRoutes);
 
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: 'API route not found' });
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`adBeeWork running at http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`adBeeWork running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
