@@ -7,19 +7,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     const data = await chrome.storage.local.get('lastFoundIcal');
 
     if (data.lastFoundIcal) {
-        statusText.innerText = "✅ Schedule found!";
+        statusText.innerText = "Ready to sync your SocialSchedules feed!";
         icalPreview.innerText = data.lastFoundIcal;
         icalPreview.style.display = 'block';
         syncBtn.disabled = false;
     } else {
-        statusText.innerText = "❌ No schedule found. Open SocialSchedules Calendar Settings.";
+        statusText.innerText = "No schedule feed found yet. Please open SocialSchedules to the Calendar Sync settings page.";
+        syncBtn.disabled = true;
     }
 
     syncBtn.onclick = async () => {
+        const originalText = syncBtn.innerText;
         syncBtn.innerText = "Syncing...";
         syncBtn.disabled = true;
 
         try {
+            // We try to talk to the local dashboard
             const response = await fetch('http://localhost:3000/api/schedules/save-url', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -27,14 +30,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                syncBtn.innerText = "✅ Synced to adBee!";
+                syncBtn.innerText = "Successfully Sent!";
+                syncBtn.style.background = "#22c55e"; // Success green
                 setTimeout(() => window.close(), 1500);
             } else {
-                throw new Error("Local dashboard not running");
+                throw new Error("Dashboard responded with error");
             }
         } catch (err) {
-            statusText.innerText = "❌ adBeeWork Dashboard not running at localhost:3000";
-            syncBtn.innerText = "Retry";
+            statusText.innerText = "Connection Failed. Make sure your adBeeWork dashboard is running at localhost:3000";
+            syncBtn.innerText = "Retry Connection";
             syncBtn.disabled = false;
         }
     };
