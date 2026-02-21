@@ -28,15 +28,17 @@ app.use((req, res, next) => {
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
+// Session MUST come before static files
 app.use(session({
   name: 'adbee-session',
   secret: process.env.SESSION_SECRET || 'adbee-dev-secret',
   maxAge: 24 * 60 * 60 * 1000,
-  secure: true, // Cookies require HTTPS
-  sameSite: 'none' // Required for iframe cross-site cookies
+  secure: true,
+  sameSite: 'none'
 }));
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/auth', authRoutes);
 app.use('/api/calendar', calendarRoutes);
