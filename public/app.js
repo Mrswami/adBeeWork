@@ -6,6 +6,8 @@ let groupMeToken = null;
 // ─── Initialization ──────────────────────────────────────────────────────────
 
 window.addEventListener('DOMContentLoaded', async () => {
+  console.log('🐝 adBeeWork: Dashboard Loaded');
+  window.parent.postMessage('AD_BEE_LOADED', '*');
   await checkAuth();
 
   // Auto-fetch shifts if URL is already there

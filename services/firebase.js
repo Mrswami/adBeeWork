@@ -11,13 +11,18 @@ function initFirebase() {
     return;
   }
 
-  const credential = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
-    ? admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON))
-    : admin.credential.applicationDefault();
+  try {
+    const credential = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
+      ? admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON))
+      : admin.credential.applicationDefault();
 
-  admin.initializeApp({ credential, projectId });
-  initialized = true;
-  console.log('Firebase initialized for project:', projectId);
+    admin.initializeApp({ credential, projectId });
+    initialized = true;
+    console.log('Firebase initialized for project:', projectId);
+  } catch (err) {
+    console.error('Firebase initialization failed:', err.message);
+    console.warn('Running without Firebase persistence.');
+  }
 }
 
 function getDb() {

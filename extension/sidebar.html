@@ -30,12 +30,10 @@
             text-align: center;
             background: #0f172a;
             z-index: 10;
-            transition: opacity 0.5s ease;
         }
 
         .hidden {
-            opacity: 0;
-            pointer-events: none;
+            display: none;
         }
 
         iframe {
@@ -56,6 +54,7 @@
             text-decoration: none;
             display: inline-block;
             font-family: inherit;
+            font-size: 14px;
         }
 
         .bee {
@@ -75,6 +74,24 @@
                 transform: translateY(-10px);
             }
         }
+
+        .link-group {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .secondary-link {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 12px;
+            border-bottom: 1px solid transparent;
+        }
+
+        .secondary-link:hover {
+            border-bottom-color: #94a3b8;
+        }
     </style>
 </head>
 
@@ -82,45 +99,54 @@
     <div id="status" class="status-container">
         <div class="bee">🐝</div>
         <div id="status-text">Connecting to adBeeWork...</div>
-        <p id="status-sub" style="font-size: 13px; color: #94a3b8; margin-top: 10px;"></p>
-        <a id="fallback-btn" href="#" class="btn" style="display:none">Open in New Tab</a>
+        <div class="link-group">
+            <a id="btn-local" href="#" class="btn">Connect Local Server</a>
+            <a id="btn-prod" href="https://ad-bee-work.vercel.app" target="_blank" class="secondary-link">Try Cloud
+                Version instead</a>
+        </div>
     </div>
     <iframe id="dashboard-frame" src="" allow="clipboard-write"></iframe>
 
     <script>
-        // ─── Config ───────────────────────────────────────────────────────────────
         const LOCAL_URL = 'http://localhost:3000';
-        const PROD_URL = 'https://ad-bee-work.vercel.app'; // Updated to match Vercel project name
+        const PROD_URL = 'https://ad-bee-work.vercel.app';
 
         const frame = document.getElementById('dashboard-frame');
         const statusD = document.getElementById('status');
-        const statusT = document.getElementById('status-text');
-        const statusS = document.getElementById('status-sub');
-        const btn = document.getElementById('fallback-btn');
+        const btnLocal = document.getElementById('btn-local');
 
-        function loadDashboard(url) {
+        function loadURL(url) {
+            statusD.classList.add('hidden');
             frame.src = url;
-            btn.href = url;
-            btn.style.display = 'inline-block';
-
-            // If the frame loads, hide the overlay
-            frame.onload = () => setTimeout(() => statusD.classList.add('hidden'), 500);
         }
 
-        // Try local first, fall back to production
-        fetch(LOCAL_URL + '/auth/status', { signal: AbortSignal.timeout(2000) })
+        btnLocal.onclick = (e) => {
+            e.preventDefault();
+            loadURL(LOCAL_URL);
+        };
+
+        // Auto-attempt local detection
+        fetch(LOCAL_URL + '/auth/status', { signal: AbortSignal.timeout(1500) })
             .then(res => {
-                if (res.ok) {
-                    statusT.innerText = 'Loading from local server...';
-                    loadDashboard(LOCAL_URL);
-                }
+                if (res.ok) loadURL(LOCAL_URL);
             })
             .catch(() => {
-                // Local not running — use production
-                statusT.innerText = 'Loading adBeeWork...';
-                statusS.innerText = 'Using cloud dashboard';
-                loadDashboard(PROD_URL);
+                // If local is definitely down, we don't auto-switch to prod in case they are just starting it
+                // But we update the UI
+                document.getElementById('status-text').innerText = "Dashboard is ready!";
             });
+
+        // Listen for "I am loaded" from the dashboard app
+        window.addEventListener('message', (event) => {
+            if (event.data === 'AD_BEE_LOADED') {
+                statusD.classList.add('hidden');
+            }
+        });
+
+        // Fallback: If the frame loads, hide overlay
+        frame.onload = () => {
+            if (frame.src) statusD.classList.add('hidden');
+        };
     </script>
 </body>
 
