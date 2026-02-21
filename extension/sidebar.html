@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>adBeeWork Sidebar</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #0f172a;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .loading {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FDBB2D;
+            font-family: sans-serif;
+            z-index: -1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loading">🐝 Connecting to adBeeWork...</div>
+    <!-- We load the dashboard directly from the server -->
+    <iframe src="http://localhost:3000" allow="clipboard-write"></iframe>
+</body>
+
+</html>

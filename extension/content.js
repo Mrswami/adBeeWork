@@ -61,6 +61,10 @@ function findSchedules() {
     if (scraped.length > 0) {
         console.log(`%c🐝 Found ${scraped.length} potential shifts!`, "color: #22c55e; font-weight: bold;");
         chrome.storage.local.set({ lastFoundShifts: scraped, lastFoundIcal: null });
+
+        // Notify the sidebar if it's open
+        chrome.runtime.sendMessage({ type: 'SHIFTS_FOUND', count: scraped.length }).catch(() => { });
+
         return true;
     }
 
