@@ -16,18 +16,20 @@ const groupMeRoutes = require('./routes/groupme');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.set('trust proxy', 1); // Trust Vercel proxy
+app.set('trust proxy', 1);
+
+// Move security headers to the TOP
+app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy", "frame-ancestors 'self' * moz-extension://* chrome-extension://*");
+  res.removeHeader("X-Frame-Options");
+  next();
+});
 
 app.use(cors({
   origin: true,
   credentials: true
 }));
 app.use(express.json());
-app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", "frame-ancestors 'self' *");
-  res.removeHeader("X-Frame-Options");
-  next();
-});
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
