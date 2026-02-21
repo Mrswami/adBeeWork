@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const syncBtn = document.getElementById('sync-btn');
     const rescanLink = document.getElementById('rescan-link');
 
+    const LOCAL_URL = 'http://localhost:3000';
+    const PROD_URL = 'https://ad-bee-work.vercel.app';
+
     async function updateStatus() {
         const data = await chrome.storage.local.get(['lastFoundIcal', 'lastFoundShifts']);
 
@@ -24,21 +27,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Initial check
     updateStatus();
 
-    // Rescan handler
     rescanLink.onclick = async (e) => {
         e.preventDefault();
         statusText.innerText = "Scanning...";
-
-        // Execute script in active tab to be sure
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tab) {
-            await chrome.scripting.executeScript({
-                target: { tabId: tab.id },
-                files: ['content.js']
-            });
+            await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
             setTimeout(updateStatus, 500);
         }
     };
@@ -48,16 +44,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         syncBtn.innerText = "Syncing...";
         syncBtn.disabled = true;
 
+        let baseUrl = LOCAL_URL;
+
+        // Quick check if local is running
+        try {
+            const check = await fetch(LOCAL_URL + '/auth/status', { signal: AbortSignal.timeout(1000) });
+            if (!check.ok) throw new Error();
+        } catch (e) {
+            baseUrl = PROD_URL;
+        }
+
         try {
             let endpoint = '/api/schedules/save-url';
             let body = { url: data.lastFoundIcal };
-
             if (data.lastFoundShifts) {
                 endpoint = '/api/schedules/save-raw';
                 body = { shifts: data.lastFoundShifts };
             }
 
-            const response = await fetch('http://localhost:3000' + endpoint, {
+            const response = await fetch(baseUrl + endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -67,19 +72,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (response.ok) {
                 syncBtn.innerText = "✅ Sent! Opening Dashboard...";
                 syncBtn.style.background = "#22c55e";
-
-                // Clear storage
                 await chrome.storage.local.remove(['lastFoundShifts']);
-
-                // Open the dashboard automatically
-                chrome.tabs.create({ url: 'http://localhost:3000' });
-
+                chrome.tabs.create({ url: baseUrl });
                 setTimeout(() => window.close(), 2000);
             } else {
                 throw new Error("Dashboard Error");
             }
         } catch (err) {
-            statusText.innerText = "❌ " + err.message + ". Is the dashboard running at localhost:3000?";
+            statusText.innerText = "❌ Connection Failed. Check if dashboard is running.";
             syncBtn.innerText = "Retry";
             syncBtn.disabled = false;
         }

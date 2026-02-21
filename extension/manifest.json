@@ -12,7 +12,8 @@
     "host_permissions": [
         "https://app.socialschedules.com/*",
         "https://*.adp.com/*",
-        "http://localhost:3000/*"
+        "http://localhost:3000/*",
+        "https://ad-bee-work.vercel.app/*"
     ],
     "action": {
         "default_icon": "icon.svg",
