@@ -40,6 +40,7 @@
             width: 100%;
             height: 100%;
             border: none;
+            background: #0f172a;
         }
 
         .btn {
@@ -55,7 +56,12 @@
             display: inline-block;
             font-family: inherit;
             font-size: 14px;
-            width: 80%;
+            width: 85%;
+            transition: transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
         }
 
         .secondary-btn {
@@ -67,7 +73,7 @@
             border-radius: 8px;
             font-size: 13px;
             cursor: pointer;
-            width: 80%;
+            width: 85%;
         }
 
         .bee {
@@ -88,24 +94,30 @@
             }
         }
 
-        .footer-links {
-            margin-top: 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 100%;
-            align-items: center;
+        .footer {
+            margin-top: 30px;
+            border-top: 1px solid #1e293b;
+            padding-top: 20px;
+            width: 85%;
         }
 
         .link {
             color: #94a3b8;
             text-decoration: none;
             font-size: 11px;
-            cursor: pointer;
+            display: block;
+            margin-bottom: 8px;
         }
 
         .link:hover {
+            color: #f8fafc;
+        }
+
+        #loading-indicator {
+            font-size: 12px;
             color: #FDBB2D;
+            margin-top: 10px;
+            display: none;
         }
     </style>
 </head>
@@ -113,16 +125,20 @@
 <body>
     <div id="status" class="status-container">
         <div class="bee">🐝</div>
-        <div id="status-text">Ready to Sync?</div>
-        <div style="width: 100%; max-width: 250px;">
-            <button id="btn-local" class="btn">Connect Local Dev</button>
-            <button id="btn-prod" class="secondary-btn">Use Cloud App</button>
-        </div>
-        <div class="footer-links">
-            <span id="reset-link" class="link">🔄 Reset Sidebar</span>
-            <a href="https://ad-bee-work.vercel.app" target="_blank" class="link">Open Cloud in New Tab</a>
+        <div id="status-text" style="font-weight:600; font-size:18px;">adBeeWork</div>
+        <p style="font-size: 13px; color: #94a3b8; margin-top: 5px;">Choose your dashboard:</p>
+
+        <button id="btn-local" class="btn">Connect Local Dev (3000)</button>
+        <button id="btn-prod" class="secondary-btn">Use Cloud Display (Live)</button>
+
+        <div id="loading-indicator">⚡ Connecting to Cloud...</div>
+
+        <div class="footer">
+            <a href="https://ad-bee-work.vercel.app" target="_blank" class="link">🌐 Open Cloud Dashboard in Tab</a>
+            <span id="reset-link" class="link" style="cursor:pointer; opacity: 0.5;">🔄 Reset Sidebar</span>
         </div>
     </div>
+
     <iframe id="dashboard-frame" src="" allow="clipboard-write"></iframe>
 
     <script>
@@ -131,48 +147,38 @@
 
         const frame = document.getElementById('dashboard-frame');
         const statusD = document.getElementById('status');
-        const statusT = document.getElementById('status-text');
-        const btnL = document.getElementById('btn-local');
-        const btnP = document.getElementById('btn-prod');
-        const reset = document.getElementById('reset-link');
+        const loader = document.getElementById('loading-indicator');
 
         function loadURL(url) {
-            console.log('🐝 Loading:', url);
-            statusD.classList.add('hidden');
+            console.log('🐝 Sidebar: Loading', url);
+            loader.style.display = 'block';
             frame.src = url;
             localStorage.setItem('adbee_last_url', url);
+
+            // Safety timeout: If it doesn't load in 3 seconds, just show the frame anyway
+            setTimeout(() => statusD.classList.add('hidden'), 3500);
         }
 
-        btnL.onclick = () => loadURL(LOCAL_URL);
-        btnP.onclick = () => loadURL(PROD_URL);
-        reset.onclick = () => {
+        document.getElementById('btn-local').onclick = () => loadURL(LOCAL_URL);
+        document.getElementById('btn-prod').onclick = () => loadURL(PROD_URL);
+        document.getElementById('reset-link').onclick = () => {
             localStorage.removeItem('adbee_last_url');
             location.reload();
         };
 
-        // Auto-load last used URL if it was working
+        // Auto-load if we have a preference
         const lastUrl = localStorage.getItem('adbee_last_url');
         if (lastUrl) {
             loadURL(lastUrl);
-        } else {
-            // Try local detection once
-            fetch(LOCAL_URL + '/auth/status', { signal: AbortSignal.timeout(1000) })
-                .then(res => { if (res.ok) loadURL(LOCAL_URL); })
-                .catch(() => { /* stay on picker */ });
         }
 
+        // Listen for the app saying "I am ready"
         window.addEventListener('message', (event) => {
             if (event.data === 'AD_BEE_LOADED') {
+                console.log('🐝 Sidebar: Connection Confirmed');
                 statusD.classList.add('hidden');
             }
         });
-
-        frame.onload = () => {
-            if (frame.src && frame.src !== 'about:blank') {
-                // Optional delay to ensure sub-resources load
-                setTimeout(() => statusD.classList.add('hidden'), 500);
-            }
-        };
     </script>
 </body>
 
