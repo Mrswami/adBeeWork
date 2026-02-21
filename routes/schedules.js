@@ -39,9 +39,22 @@ router.post('/save-url', requireAuth, (req, res) => {
   res.json({ success: true });
 });
 
+// POST /api/schedules/save-raw — save scraped shifts to session
+router.post('/save-raw', requireAuth, (req, res) => {
+  const { shifts } = req.body;
+  if (!shifts || !Array.isArray(shifts)) {
+    return res.status(400).json({ error: 'Array of shifts is required.' });
+  }
+  req.session.scrapedShifts = shifts;
+  res.json({ success: true, count: shifts.length });
+});
+
 // GET /api/schedules/saved-url
 router.get('/saved-url', requireAuth, (req, res) => {
-  res.json({ url: req.session.icalUrl || null });
+  res.json({
+    url: req.session.icalUrl || null,
+    scrapedCount: req.session.scrapedShifts ? req.session.scrapedShifts.length : 0
+  });
 });
 
 module.exports = router;

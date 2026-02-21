@@ -3,42 +3,53 @@ document.addEventListener('DOMContentLoaded', async () => {
     const icalPreview = document.getElementById('ical-preview');
     const syncBtn = document.getElementById('sync-btn');
 
-    // Check storage for found URL
-    const data = await chrome.storage.local.get('lastFoundIcal');
+    // Check storage for found data
+    const data = await chrome.storage.local.get(['lastFoundIcal', 'lastFoundShifts']);
 
     if (data.lastFoundIcal) {
-        statusText.innerText = "Ready to sync your SocialSchedules feed!";
+        statusText.innerText = "✅ Schedule Feed Found!";
         icalPreview.innerText = data.lastFoundIcal;
         icalPreview.style.display = 'block';
         syncBtn.disabled = false;
+    } else if (data.lastFoundShifts && data.lastFoundShifts.length > 0) {
+        statusText.innerText = `✅ Found ${data.lastFoundShifts.length} shifts on the current page!`;
+        icalPreview.innerText = "We'll sync the shifts visible in your browser.";
+        icalPreview.style.display = 'block';
+        syncBtn.disabled = false;
     } else {
-        statusText.innerText = "No schedule feed found yet. Please open SocialSchedules to the Calendar Sync settings page.";
+        statusText.innerText = "❌ No schedule found. Try navigating to your 'Schedule' tab or 'Settings > Calendar Sync'.";
         syncBtn.disabled = true;
     }
 
     syncBtn.onclick = async () => {
-        const originalText = syncBtn.innerText;
         syncBtn.innerText = "Syncing...";
         syncBtn.disabled = true;
 
         try {
-            // We try to talk to the local dashboard
-            const response = await fetch('http://localhost:3000/api/schedules/save-url', {
+            let endpoint = '/api/schedules/save-url';
+            let body = { url: data.lastFoundIcal };
+
+            if (data.lastFoundShifts) {
+                endpoint = '/api/schedules/save-raw';
+                body = { shifts: data.lastFoundShifts };
+            }
+
+            const response = await fetch('http://localhost:3000' + endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: data.lastFoundIcal })
+                body: JSON.stringify(body)
             });
 
             if (response.ok) {
-                syncBtn.innerText = "Successfully Sent!";
-                syncBtn.style.background = "#22c55e"; // Success green
+                syncBtn.innerText = "✅ Sent to adBeeWork!";
+                syncBtn.style.background = "#22c55e";
                 setTimeout(() => window.close(), 1500);
             } else {
-                throw new Error("Dashboard responded with error");
+                throw new Error("Dashboard Error");
             }
         } catch (err) {
-            statusText.innerText = "Connection Failed. Make sure your adBeeWork dashboard is running at localhost:3000";
-            syncBtn.innerText = "Retry Connection";
+            statusText.innerText = "❌ Dashboard not running. Start it with 'npm run dev'.";
+            syncBtn.innerText = "Retry";
             syncBtn.disabled = false;
         }
     };
