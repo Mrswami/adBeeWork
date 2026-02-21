@@ -3,7 +3,7 @@
  */
 
 // Chrome specific: Open the side panel when the toolbar icon is clicked
-if (typeof chrome !== 'undefined' && chrome.sidePanel) {
+if (typeof chrome !== 'undefined' && chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
     chrome.sidePanel
         .setPanelBehavior({ openPanelOnActionClick: true })
         .catch((error) => console.error(error));
