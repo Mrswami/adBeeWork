@@ -17,8 +17,6 @@ router.get('/callback', async (req, res) => {
 
   try {
     const tokens = await getTokensFromCode(code);
-    req.session.tokens = tokens;
-
     // Fetch basic Google profile info
     const { createOAuthClient } = require('../services/googleCalendar');
     const client = createOAuthClient();
@@ -26,17 +24,22 @@ router.get('/callback', async (req, res) => {
     const oauth2 = google.oauth2({ version: 'v2', auth: client });
 
     const userInfo = await oauth2.userinfo.get();
-    const profile = {
-      email: userInfo.data.email,
+
+    // ONLY store the tokens and basic ID - keep it under 4KB!
+    req.session.tokens = {
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expiry_date: tokens.expiry_date
+    };
+    req.session.uid = userInfo.data.id;
+    req.session.userInfo = {
       name: userInfo.data.name,
-      picture: userInfo.data.picture,
+      email: userInfo.data.email,
+      picture: userInfo.data.picture
     };
 
-    req.session.uid = userInfo.data.id;
-    req.session.userInfo = profile;
-
-    // Save/update user in Firestore (non-blocking failure)
-    await upsertUser(userInfo.data.id, profile).catch(() => { });
+    // Save/update user in Firestore (non-blocking)
+    await upsertUser(userInfo.data.id, req.session.userInfo).catch(() => { });
 
     res.redirect('/?auth=success');
   } catch (err) {

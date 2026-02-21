@@ -18,17 +18,15 @@ const PORT = process.env.PORT || 3000;
 
 app.set('trust proxy', 1);
 
-// Move security headers to the TOP
+// Aggressive framing permission
 app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", "frame-ancestors 'self' * moz-extension://* chrome-extension://*");
+  res.setHeader("Content-Security-Policy", "frame-ancestors *");
   res.removeHeader("X-Frame-Options");
+  res.removeHeader("Frame-Options");
   next();
 });
 
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
