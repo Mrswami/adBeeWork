@@ -20,16 +20,10 @@ router.get('/callback', async (req, res) => {
     req.session.tokens = tokens;
 
     // Fetch basic Google profile info
-    const oauth2 = google.oauth2({ version: 'v2', auth: (() => {
-      const { google: g } = require('googleapis');
-      const client = new g.auth.OAuth2(
-        process.env.GOOGLE_CLIENT_ID,
-        process.env.GOOGLE_CLIENT_SECRET,
-        process.env.GOOGLE_REDIRECT_URI
-      );
-      client.setCredentials(tokens);
-      return client;
-    })() });
+    const { createOAuthClient } = require('../services/googleCalendar');
+    const client = createOAuthClient();
+    client.setCredentials(tokens);
+    const oauth2 = google.oauth2({ version: 'v2', auth: client });
 
     const userInfo = await oauth2.userinfo.get();
     const profile = {
@@ -42,7 +36,7 @@ router.get('/callback', async (req, res) => {
     req.session.userInfo = profile;
 
     // Save/update user in Firestore (non-blocking failure)
-    await upsertUser(userInfo.data.id, profile).catch(() => {});
+    await upsertUser(userInfo.data.id, profile).catch(() => { });
 
     res.redirect('/?auth=success');
   } catch (err) {

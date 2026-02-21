@@ -55,6 +55,19 @@
             display: inline-block;
             font-family: inherit;
             font-size: 14px;
+            width: 80%;
+        }
+
+        .secondary-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            width: 80%;
         }
 
         .bee {
@@ -75,22 +88,24 @@
             }
         }
 
-        .link-group {
-            margin-top: 20px;
+        .footer-links {
+            margin-top: 25px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
+            width: 100%;
+            align-items: center;
         }
 
-        .secondary-link {
+        .link {
             color: #94a3b8;
             text-decoration: none;
-            font-size: 12px;
-            border-bottom: 1px solid transparent;
+            font-size: 11px;
+            cursor: pointer;
         }
 
-        .secondary-link:hover {
-            border-bottom-color: #94a3b8;
+        .link:hover {
+            color: #FDBB2D;
         }
     </style>
 </head>
@@ -98,11 +113,14 @@
 <body>
     <div id="status" class="status-container">
         <div class="bee">🐝</div>
-        <div id="status-text">Connecting to adBeeWork...</div>
-        <div class="link-group">
-            <a id="btn-local" href="#" class="btn">Connect Local Server</a>
-            <a id="btn-prod" href="https://ad-bee-work.vercel.app" target="_blank" class="secondary-link">Try Cloud
-                Version instead</a>
+        <div id="status-text">Ready to Sync?</div>
+        <div style="width: 100%; max-width: 250px;">
+            <button id="btn-local" class="btn">Connect Local Dev</button>
+            <button id="btn-prod" class="secondary-btn">Use Cloud App</button>
+        </div>
+        <div class="footer-links">
+            <span id="reset-link" class="link">🔄 Reset Sidebar</span>
+            <a href="https://ad-bee-work.vercel.app" target="_blank" class="link">Open Cloud in New Tab</a>
         </div>
     </div>
     <iframe id="dashboard-frame" src="" allow="clipboard-write"></iframe>
@@ -113,39 +131,47 @@
 
         const frame = document.getElementById('dashboard-frame');
         const statusD = document.getElementById('status');
-        const btnLocal = document.getElementById('btn-local');
+        const statusT = document.getElementById('status-text');
+        const btnL = document.getElementById('btn-local');
+        const btnP = document.getElementById('btn-prod');
+        const reset = document.getElementById('reset-link');
 
         function loadURL(url) {
+            console.log('🐝 Loading:', url);
             statusD.classList.add('hidden');
             frame.src = url;
+            localStorage.setItem('adbee_last_url', url);
         }
 
-        btnLocal.onclick = (e) => {
-            e.preventDefault();
-            loadURL(LOCAL_URL);
+        btnL.onclick = () => loadURL(LOCAL_URL);
+        btnP.onclick = () => loadURL(PROD_URL);
+        reset.onclick = () => {
+            localStorage.removeItem('adbee_last_url');
+            location.reload();
         };
 
-        // Auto-attempt local detection
-        fetch(LOCAL_URL + '/auth/status', { signal: AbortSignal.timeout(1500) })
-            .then(res => {
-                if (res.ok) loadURL(LOCAL_URL);
-            })
-            .catch(() => {
-                // If local is definitely down, we don't auto-switch to prod in case they are just starting it
-                // But we update the UI
-                document.getElementById('status-text').innerText = "Dashboard is ready!";
-            });
+        // Auto-load last used URL if it was working
+        const lastUrl = localStorage.getItem('adbee_last_url');
+        if (lastUrl) {
+            loadURL(lastUrl);
+        } else {
+            // Try local detection once
+            fetch(LOCAL_URL + '/auth/status', { signal: AbortSignal.timeout(1000) })
+                .then(res => { if (res.ok) loadURL(LOCAL_URL); })
+                .catch(() => { /* stay on picker */ });
+        }
 
-        // Listen for "I am loaded" from the dashboard app
         window.addEventListener('message', (event) => {
             if (event.data === 'AD_BEE_LOADED') {
                 statusD.classList.add('hidden');
             }
         });
 
-        // Fallback: If the frame loads, hide overlay
         frame.onload = () => {
-            if (frame.src) statusD.classList.add('hidden');
+            if (frame.src && frame.src !== 'about:blank') {
+                // Optional delay to ensure sub-resources load
+                setTimeout(() => statusD.classList.add('hidden'), 500);
+            }
         };
     </script>
 </body>
