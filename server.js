@@ -21,6 +21,10 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy", "frame-ancestors 'self' moz-extension://* chrome-extension://*");
+  next();
+});
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
