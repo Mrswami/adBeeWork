@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
+const session = require('cookie-session');
 const cors = require('cors');
 const path = require('path');
 const { initFirebase } = require('./services/firebase');
@@ -29,10 +29,11 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
+  name: 'adbee-session',
   secret: process.env.SESSION_SECRET || 'adbee-dev-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 },
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax'
 }));
 
 app.use('/auth', authRoutes);
