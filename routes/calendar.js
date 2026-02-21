@@ -9,6 +9,7 @@ const {
 } = require('../services/googleCalendar');
 const { parseSocialSchedulesFeed, scheduleToCalendarEvent } = require('../services/icalParser');
 const { recordSync, saveUserSettings } = require('../services/firebase');
+const { sendMessage } = require('../services/groupme');
 
 function requireAuth(req, res, next) {
   if (!req.session.tokens) {
@@ -100,7 +101,16 @@ router.post('/sync', requireAuth, async (req, res) => {
 
     // Persist sync record to Firestore if user profile exists
     if (req.session.uid) {
-      await recordSync(req.session.uid, summary).catch(() => {});
+      await recordSync(req.session.uid, summary).catch(() => { });
+    }
+
+    // Proactive GroupMe Notification
+    const gmToken = process.env.GROUPME_ACCESS_TOKEN || req.session.groupmeToken;
+    const gmGroupId = process.env.GROUPME_DEFAULT_GROUP_ID; // Optional env for auto-notify
+
+    if (gmToken && gmGroupId && summary.synced > 0) {
+      const msg = `🐝 adBeeWork: just synced ${summary.synced} shifts to my Google Calendar!`;
+      await sendMessage(gmToken, gmGroupId, msg).catch(e => console.error('GM Notify Error:', e.message));
     }
 
     res.json({ success: true, ...summary });
