@@ -1,37 +1,39 @@
 {
-  "manifest_version": 3,
-  "name": "adBeeWork Connector",
-  "version": "1.0",
-  "description": "Automatically find and sync your work schedules from SocialSchedules and ADP to adBeeWork.",
-  "permissions": [
-    "storage",
-    "activeTab"
-  ],
-  "host_permissions": [
-    "https://app.socialschedules.com/*",
-    "https://*.adp.com/*",
-    "http://localhost:3000/*"
-  ],
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
-  },
-  "content_scripts": [
-    {
-      "matches": [
+    "manifest_version": 3,
+    "name": "adBeeWork Connector",
+    "version": "1.1",
+    "description": "Automatically find and sync your work schedules from SocialSchedules and ADP to adBeeWork.",
+    "permissions": [
+        "storage",
+        "activeTab"
+    ],
+    "host_permissions": [
         "https://app.socialschedules.com/*",
-        "https://*.adp.com/*"
-      ],
-      "js": ["content.js"]
+        "https://*.adp.com/*",
+        "http://localhost:3000/*"
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": "icon.svg"
+    },
+    "icons": {
+        "48": "icon.svg",
+        "128": "icon.svg"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://app.socialschedules.com/*",
+                "https://*.adp.com/*"
+            ],
+            "js": [
+                "content.js"
+            ]
+        }
+    ],
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "connector@adbeework.local"
+        }
     }
-  ],
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  }
 }
