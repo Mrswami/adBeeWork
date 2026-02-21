@@ -1,144 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>adBeeWork — Schedule Sync</title>
+  <title>adBeeWork | Premium Schedule Sync</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="shortcut icon" href="https://img.icons8.com/color/48/bee.png" type="image/x-icon">
 </head>
-<body>
-<div id="app">
 
-  <!-- Header -->
-  <header class="header">
-    <div class="header-inner">
+<body>
+  <div id="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
       <div class="logo">
         <span class="logo-icon">🐝</span>
         <span class="logo-text">adBeeWork</span>
       </div>
-      <div id="auth-area">
-        <button id="btn-login" class="btn btn-google" onclick="loginWithGoogle()">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908C16.658 14.015 17.64 11.707 17.64 9.2z" fill="#4285F4"/>
-            <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
-            <path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+
+      <nav class="nav-menu">
+        <div class="nav-item active" onclick="showSection('shifts')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
           </svg>
-          Sign in with Google
-        </button>
-        <div id="user-info" class="user-info hidden">
-          <img id="user-avatar" class="avatar" src="" alt="" />
+          <span class="nav-text">My Shifts</span>
+        </div>
+        <div class="nav-item" onclick="showSection('groupme')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+            </path>
+          </svg>
+          <span class="nav-text">GroupMe</span>
+        </div>
+        <div class="nav-item" onclick="showSection('settings')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+            </path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+            </path>
+          </svg>
+          <span class="nav-text">Settings</span>
+        </div>
+      </nav>
+
+      <div class="user-profile" id="user-profile-sidebar">
+        <button class="btn btn-primary" id="btn-login-sidebar" onclick="loginWithGoogle()">Sign In</button>
+        <div id="user-info-sidebar" class="hidden">
+          <img id="user-avatar-sidebar" class="avatar" src="" alt="Avatar" />
           <div class="user-details">
-            <span id="user-name"></span>
-            <span id="user-email"></span>
+            <div id="user-name-sidebar" style="font-weight:600; font-size: 0.875rem;"></div>
+            <div id="user-email-sidebar" style="color:var(--text-muted); font-size: 0.75rem;"></div>
           </div>
-          <button class="btn btn-outline btn-sm" onclick="logout()">Sign out</button>
         </div>
       </div>
-    </div>
-  </header>
+    </aside>
 
-  <main class="main">
+    <!-- Main Content -->
+    <main class="main-content">
 
-    <!-- Setup card -->
-    <section id="setup-panel" class="card">
-      <h2 class="card-title">Setup</h2>
-
-      <div class="field-group">
-        <label class="label">SocialSchedules iCal URL</label>
-        <p class="hint">Open SocialSchedules → <strong>Menu → Settings → Calendar Sync</strong> → copy the calendar link.</p>
-        <div class="input-row">
-          <input type="url" id="ical-url" class="input" placeholder="https://app.socialschedules.com/ical/..." />
-          <button class="btn btn-primary" onclick="saveAndFetch()">Load Shifts</button>
+      <!-- Hero / Header -->
+      <div style="display:flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+        <div>
+          <h1 id="main-title">My Work Shifts</h1>
+          <p class="text-muted" id="main-subtitle">Manage your SocialSchedules and sync to Google Calendar.</p>
         </div>
-      </div>
-
-      <div class="two-col">
-        <div class="field-group">
-          <label class="label" for="cal-picker">Add events to which Calendar?</label>
-          <select id="cal-picker" class="input" disabled>
-            <option value="">— sign in to load calendars —</option>
-          </select>
-        </div>
-
-        <div class="field-group">
-          <label class="label" for="timezone">Your Timezone</label>
-          <select id="timezone" class="input">
-            <option value="America/New_York">Eastern (ET)</option>
-            <option value="America/Chicago">Central (CT)</option>
-            <option value="America/Denver">Mountain (MT)</option>
-            <option value="America/Los_Angeles">Pacific (PT)</option>
-            <option value="America/Phoenix">Arizona (MST)</option>
-            <option value="America/Anchorage">Alaska (AKT)</option>
-            <option value="Pacific/Honolulu">Hawaii (HST)</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="field-group">
-        <label class="toggle-label">
-          <input type="checkbox" id="notify-self" />
-          <span class="toggle-text">
-            Notify me when events are created
-            <span id="notify-badge" class="badge badge-off">Auto-replies OFF</span>
-          </span>
-        </label>
-        <p class="hint">Off = events added silently, no email invites. On = you get a confirmation email only.</p>
-      </div>
-    </section>
-
-    <!-- Schedules panel -->
-    <section id="schedules-panel" class="card hidden">
-      <div class="panel-header">
-        <h2 class="card-title">Upcoming Confirmed Shifts <span id="shift-count" class="count-badge"></span></h2>
-        <div class="panel-actions">
-          <button class="btn btn-outline btn-sm" onclick="selectAll()">Select All</button>
-          <button class="btn btn-outline btn-sm" onclick="selectNone()">Deselect All</button>
-          <button class="btn btn-primary" onclick="askToSync()">
-            Sync to Google Calendar →
+        <div id="header-actions">
+          <button class="btn btn-primary" onclick="saveAndFetch()" id="btn-sync-now">
+            Sync Now
           </button>
         </div>
       </div>
-      <div id="schedules-list" class="schedules-list"></div>
-    </section>
 
-    <!-- Result panel -->
-    <section id="result-panel" class="card hidden">
-      <h2 class="card-title">Sync Complete</h2>
-      <div id="result-content"></div>
-      <button class="btn btn-outline" onclick="hideResult()">Dismiss</button>
-    </section>
+      <!-- Shifts Section -->
+      <section id="section-shifts" class="animate-in">
+        <div class="schedules-grid" id="schedules-list">
+          <!-- JS rendered cards -->
+          <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 4rem;">
+            <h2 style="margin-bottom: 1rem;">Welcome to adBeeWork</h2>
+            <p class="text-muted" style="max-width: 500px; margin: 0 auto 2rem;">Connect your SocialSchedules iCal feed
+              and your shifts will magically appear here, ready for Google Calendar sync.</p>
+            <button class="btn btn-secondary" onclick="showSection('settings')">Configure iCal Feed</button>
+          </div>
+        </div>
 
-    <!-- History panel -->
-    <section id="history-panel" class="card hidden">
-      <h2 class="card-title">Sync History</h2>
-      <div id="history-list"></div>
-    </section>
+        <div style="margin-top: 2rem; display: flex; justify-content: center;" id="sync-action-container"
+          class="hidden">
+          <button class="btn btn-primary" onclick="runSync()" style="padding: 1rem 3rem; font-size: 1.125rem;">
+            Add Selected Shifts to Google Calendar
+          </button>
+        </div>
+      </section>
 
-  </main>
-</div>
+      <!-- GroupMe Section -->
+      <section id="section-groupme" class="animate-in hidden">
+        <div class="card">
+          <div class="groupme-panel" id="groupme-container">
+            <div class="gm-sidebar" id="gm-groups">
+              <div style="padding: 1.5rem; text-align: center; font-size: 0.875rem; color: var(--text-muted);">
+                Load your Groups...
+              </div>
+            </div>
+            <div class="gm-chat">
+              <div id="gm-messages" class="gm-message-list">
+                <div style="margin: auto; text-align:center; color: var(--text-muted);">
+                  Select a group to view messages
+                </div>
+              </div>
+              <div style="padding: 1rem; border-top: 1px solid var(--glass-border); display: flex; gap: 0.5rem;">
+                <input type="text" id="gm-input" class="input-field" placeholder="Type a message...">
+                <button class="btn btn-primary" id="btn-gm-send" onclick="sendGMMessage()">Send</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-<!-- Confirm Modal -->
-<div id="confirm-modal" class="modal-backdrop hidden">
-  <div class="modal">
-    <h3 class="modal-title">Confirm Sync</h3>
-    <div id="confirm-body" class="modal-body"></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeConfirm()">Cancel</button>
-      <button class="btn btn-primary" onclick="confirmSync()">Yes, Add to Calendar</button>
+      <!-- Settings Section -->
+      <section id="section-settings" class="animate-in hidden">
+        <div class="card">
+          <h3>Configuration</h3>
+          <div class="input-container">
+            <label class="input-label">SocialSchedules iCal URL</label>
+            <input type="url" id="ical-url" class="input-field" placeholder="https://app.socialschedules.com/ical/...">
+            <p class="text-muted" style="font-size: 0.75rem; margin-top: 0.5rem;">SocialSchedules → Menu → Settings →
+              Calendar Sync → Copy Link</p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div class="input-container">
+              <label class="input-label">Destination Google Calendar</label>
+              <select id="cal-picker" class="input-field" disabled>
+                <option value="">— Sign in to load calendars —</option>
+              </select>
+            </div>
+            <div class="input-container">
+              <label class="input-label">Timezone</label>
+              <select id="timezone" class="input-field">
+                <option value="America/Chicago">Central Time (CT)</option>
+                <option value="America/New_York">Eastern Time (ET)</option>
+                <option value="America/Denver">Mountain Time (MT)</option>
+                <option value="America/Los_Angeles">Pacific Time (PT)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="input-container">
+            <label class="input-label">GroupMe Access Token</label>
+            <input type="password" id="gm-token" class="input-field" placeholder="Paste your GroupMe dev token">
+            <p class="text-muted" style="font-size: 0.75rem; margin-top: 0.5rem;">Get one at <a
+                href="https://dev.groupme.com" target="_blank" style="color:var(--primary)">dev.groupme.com</a></p>
+          </div>
+
+          <button class="btn btn-primary" onclick="saveSettings()">Save Configuration</button>
+          <button class="btn btn-secondary" onclick="logout()" style="margin-left: 1rem;">Sign Out</button>
+        </div>
+
+        <div class="card">
+          <h3>Sync History</h3>
+          <div id="history-list">
+            <p class="text-muted">No sync history yet.</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Modal Overlay (Generic) -->
+    <div id="modal-overlay" class="hidden"
+      style="position:fixed; inset:0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+      <div class="card" id="modal-content" style="max-width: 500px; width: 100%; margin: 0;">
+        <!-- Content here -->
+      </div>
     </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">Message here</div>
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="hidden"
+      style="position:fixed; inset:0; background: rgba(15,23,42,0.9); z-index: 2000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 1.5rem;">
+      <div
+        style="width: 50px; height: 50px; border: 4px solid var(--primary); border-top-color: transparent; border-radius:50%; animation: spin 1s linear infinite;">
+      </div>
+      <div id="loading-text" style="font-weight:500; color:var(--primary)">Loading shifts...</div>
+    </div>
+
   </div>
-</div>
 
-<!-- Loading -->
-<div id="loading" class="loading hidden">
-  <div class="spinner"></div>
-  <p id="loading-text">Loading...</p>
-</div>
+  <style>
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
-<!-- Toast -->
-<div id="toast" class="toast hidden"></div>
+    .text-muted {
+      color: var(--text-muted);
+    }
+  </style>
 
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
+
 </html>
