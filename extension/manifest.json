@@ -5,7 +5,9 @@
     "description": "Automatically find and sync your work schedules from SocialSchedules and ADP to adBeeWork.",
     "permissions": [
         "storage",
-        "activeTab"
+        "activeTab",
+        "scripting",
+        "tabs"
     ],
     "host_permissions": [
         "https://app.socialschedules.com/*",

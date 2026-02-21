@@ -1,69 +1,87 @@
 /**
- * content.js - Scans for iCal feeds OR scrapes shifts directly from the view
+ * content.js - Scans for schedules on the page
  */
 
-console.log("🐝 adBeeWork Connector: Scanning for schedules...");
+console.log("%c🐝 adBeeWork Connector: Script injected into page!", "color: #FDBB2D; font-weight: bold; font-size: 14px;");
 
-function findScheduleData() {
-    // 1. Check for iCal link (best method)
-    const inputs = document.querySelectorAll('input, a, code');
-    for (const el of inputs) {
-        const text = (el.value || el.innerText || el.href || "");
-        if (text.includes('app.socialschedules.com/ical/')) {
-            const url = text.trim();
-            chrome.storage.local.set({ lastFoundIcal: url, lastFoundShifts: null });
-            showAdBeeNotice("Found your schedule feed! Ready to sync.");
+function findSchedules() {
+    console.log("🐝 Scanning for shifts...");
+
+    // 1. Check for iCal link first
+    const links = document.querySelectorAll('input, a');
+    for (const el of links) {
+        const val = (el.value || el.innerText || el.href || "");
+        if (val.includes('socialschedules.com/ical/')) {
+            console.log("🐝 Found iCal URL via scanner:", val);
+            chrome.storage.local.set({ lastFoundIcal: val.trim(), lastFoundShifts: null });
             return true;
         }
     }
 
-    // 2. Scrape shifts directly from the "Week" view if iCal isn't found
-    // Based on SocialSchedules DOM structure
-    const shiftElements = document.querySelectorAll('.schedule-event, [class*="event"], [class*="shift"]');
-    if (shiftElements.length > 5) { // Threshold to avoid false positives
-        const scrapedShifts = [];
+    // 2. Direct Scraper for the "Week" or "Day" view
+    // We look for elements that likely contain shift data
+    // Patterns: "3:30 pm - 7:30 pm"
+    const timeRegex = /(\d{1,2}:\d{2})\s*(am|pm)\s*-\s*(\d{1,2}:\d{2})\s*(am|pm)/i;
+    const scraped = [];
 
-        // We attempt to find elements that look like shifts
-        // Usually they have a title, time, and date context
-        // This is a generic backup scraper
-        const events = document.querySelectorAll('div[role="button"], .shift-container');
-        events.forEach(ev => {
-            const text = ev.innerText;
-            if (text.includes(':') && (text.includes('am') || text.includes('pm'))) {
-                // It's likely a shift!
-                scrapedShifts.push({
-                    id: 'scraped-' + Math.random().toString(36).substr(2, 9),
-                    title: ev.querySelector('.title, [class*="name"]')?.innerText || "Work Shift",
-                    rawText: text,
-                    timestamp: Date.now()
-                });
+    // We'll look at ALL elements that might be a "shift card"
+    // On SocialSchedules, shifts are often in divs that have specific styling
+    const potentialShiftElements = document.querySelectorAll('div, span, section');
+
+    potentialShiftElements.forEach((el) => {
+        // Only look at "leaf" or small containers to avoid grabbing the whole page
+        if (el.children.length > 10) return;
+
+        const text = el.innerText;
+        const match = text.match(timeRegex);
+
+        if (match) {
+            // It has a time! Now let's see if it has a title or location
+            // We'll grab the parent container if it's small, to get the full context
+            let container = el;
+            // If it's a small span inside a div, the div is likely the card
+            if (container.tagName === 'SPAN' && container.parentElement.innerText.length < 200) {
+                container = container.parentElement;
             }
-        });
 
-        if (scrapedShifts.length > 0) {
-            chrome.storage.local.set({ lastFoundShifts: scrapedShifts, lastFoundIcal: null });
-            showAdBeeNotice(`Found ${scrapedShifts.length} shifts on this page!`);
-            return true;
+            const shiftInfo = {
+                id: 'scraped-' + Math.random().toString(36).substr(2, 5),
+                title: container.querySelector('strong, h3, h4, .title, .name')?.innerText || "Found Shift",
+                time: match[0],
+                fullText: container.innerText.replace(/\n+/g, ' ').trim()
+            };
+
+            // Avoid duplicates by checking the fullText
+            if (!scraped.some(s => s.fullText === shiftInfo.fullText)) {
+                scraped.push(shiftInfo);
+            }
         }
+    });
+
+    if (scraped.length > 0) {
+        console.log(`%c🐝 Found ${scraped.length} potential shifts!`, "color: #22c55e; font-weight: bold;");
+        chrome.storage.local.set({ lastFoundShifts: scraped, lastFoundIcal: null });
+        return true;
     }
 
     return false;
 }
 
-function showAdBeeNotice(msg) {
-    if (document.getElementById('adbee-notice')) return;
-    const div = document.createElement('div');
-    div.id = 'adbee-notice';
-    div.style = `position:fixed; top:20px; right:20px; background:#FDBB2D; color:#000; padding:16px 24px; border-radius:12px; z-index:9999999; font-family:sans-serif; box-shadow:0 10px 25px rgba(0,0,0,0.4); font-weight:600; cursor:pointer; display:flex; align-items:center; gap:10px; animation:slideIn 0.4s ease-out;`;
-    div.innerHTML = `<span>🐝</span> <span>${msg}</span>`;
-    const style = document.createElement('style');
-    style.innerHTML = `@keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }`;
-    document.head.appendChild(style);
-    div.onclick = () => div.remove();
-    document.body.appendChild(div);
-    setTimeout(() => { if (div.parentNode) div.remove(); }, 8000);
-}
+// Run immediately
+findSchedules();
 
-// Initial/Periodic Scan
-findScheduleData();
-setInterval(findScheduleData, 5000);
+// And periodically (for SPAs)
+const scanner = setInterval(() => {
+    const found = findSchedules();
+    if (found) {
+        // We found something, but don't stop scanning in case they change weeks
+        console.log("🐝 Shift data current.");
+    }
+}, 5000);
+
+// Listen for messages from popup
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "ping") {
+        sendResponse({ status: "alive" });
+    }
+});

@@ -2,26 +2,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     const statusText = document.getElementById('status-text');
     const icalPreview = document.getElementById('ical-preview');
     const syncBtn = document.getElementById('sync-btn');
+    const rescanLink = document.getElementById('rescan-link');
 
-    // Check storage for found data
-    const data = await chrome.storage.local.get(['lastFoundIcal', 'lastFoundShifts']);
+    async function updateStatus() {
+        const data = await chrome.storage.local.get(['lastFoundIcal', 'lastFoundShifts']);
 
-    if (data.lastFoundIcal) {
-        statusText.innerText = "✅ Schedule Feed Found!";
-        icalPreview.innerText = data.lastFoundIcal;
-        icalPreview.style.display = 'block';
-        syncBtn.disabled = false;
-    } else if (data.lastFoundShifts && data.lastFoundShifts.length > 0) {
-        statusText.innerText = `✅ Found ${data.lastFoundShifts.length} shifts on the current page!`;
-        icalPreview.innerText = "We'll sync the shifts visible in your browser.";
-        icalPreview.style.display = 'block';
-        syncBtn.disabled = false;
-    } else {
-        statusText.innerText = "❌ No schedule found. Try navigating to your 'Schedule' tab or 'Settings > Calendar Sync'.";
-        syncBtn.disabled = true;
+        if (data.lastFoundIcal) {
+            statusText.innerText = "✅ Schedule Feed Link Found!";
+            icalPreview.innerText = data.lastFoundIcal;
+            icalPreview.style.display = 'block';
+            syncBtn.disabled = false;
+        } else if (data.lastFoundShifts && data.lastFoundShifts.length > 0) {
+            statusText.innerHTML = `✅ Found <strong>${data.lastFoundShifts.length}</strong> shifts on this page!<br><span style="font-size:11px; color:#FDBB2D">Ready for dashboard sync.</span>`;
+            icalPreview.innerText = data.lastFoundShifts.slice(0, 2).map(s => `• ${s.time}: ${s.fullText.substring(0, 30)}...`).join('\n');
+            icalPreview.style.display = 'block';
+            syncBtn.disabled = false;
+        } else {
+            statusText.innerText = "🔍 No shifts found. Try navigating to your Schedule tab.";
+            icalPreview.style.display = 'none';
+            syncBtn.disabled = true;
+        }
     }
 
+    // Initial check
+    updateStatus();
+
+    // Rescan handler
+    rescanLink.onclick = async (e) => {
+        e.preventDefault();
+        statusText.innerText = "Scanning...";
+
+        // Execute script in active tab to be sure
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab) {
+            await chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                files: ['content.js']
+            });
+            setTimeout(updateStatus, 500);
+        }
+    };
+
     syncBtn.onclick = async () => {
+        const data = await chrome.storage.local.get(['lastFoundIcal', 'lastFoundShifts']);
         syncBtn.innerText = "Syncing...";
         syncBtn.disabled = true;
 
@@ -41,14 +64,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                syncBtn.innerText = "✅ Sent to adBeeWork!";
+                syncBtn.innerText = "✅ Done! Check Dashboard";
                 syncBtn.style.background = "#22c55e";
+                // Clear storage so we don't sync same thing forever
+                await chrome.storage.local.remove(['lastFoundShifts']);
                 setTimeout(() => window.close(), 1500);
             } else {
                 throw new Error("Dashboard Error");
             }
         } catch (err) {
-            statusText.innerText = "❌ Dashboard not running. Start it with 'npm run dev'.";
+            statusText.innerText = "❌ Connection Failed. Is the dashboard running?";
             syncBtn.innerText = "Retry";
             syncBtn.disabled = false;
         }
