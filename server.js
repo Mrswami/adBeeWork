@@ -16,6 +16,8 @@ const groupMeRoutes = require('./routes/groupme');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('trust proxy', 1); // Trust Vercel proxy
+
 app.use(cors({
   origin: true,
   credentials: true
@@ -31,9 +33,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   name: 'adbee-session',
   secret: process.env.SESSION_SECRET || 'adbee-dev-secret',
-  maxAge: 24 * 60 * 60 * 1000, // 24 hours
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax'
+  maxAge: 24 * 60 * 60 * 1000,
+  secure: true, // Cookies require HTTPS
+  sameSite: 'none' // Required for iframe cross-site cookies
 }));
 
 app.use('/auth', authRoutes);
