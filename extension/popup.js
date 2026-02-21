@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const response = await fetch('http://localhost:3000' + endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify(body)
             });
 
@@ -78,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error("Dashboard Error");
             }
         } catch (err) {
-            statusText.innerText = "❌ Connection Failed. Is the dashboard running?";
+            statusText.innerText = "❌ " + err.message + ". Is the dashboard running at localhost:3000?";
             syncBtn.innerText = "Retry";
             syncBtn.disabled = false;
         }

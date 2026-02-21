@@ -30,7 +30,7 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // POST /api/schedules/save-url  — save iCal URL to session
-router.post('/save-url', requireAuth, (req, res) => {
+router.post('/save-url', (req, res) => {
   const { url } = req.body;
   if (!url) {
     return res.status(400).json({ error: 'URL is required.' });
@@ -40,7 +40,7 @@ router.post('/save-url', requireAuth, (req, res) => {
 });
 
 // POST /api/schedules/save-raw — save scraped shifts to session
-router.post('/save-raw', requireAuth, (req, res) => {
+router.post('/save-raw', (req, res) => {
   const { shifts } = req.body;
   if (!shifts || !Array.isArray(shifts)) {
     return res.status(400).json({ error: 'Array of shifts is required.' });
