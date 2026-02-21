@@ -38,6 +38,8 @@ router.get('/callback', async (req, res) => {
       picture: userInfo.data.picture
     };
 
+    console.log('🐝 Session data size check:', JSON.stringify(req.session).length, 'bytes');
+
     // Save/update user in Firestore (non-blocking)
     await upsertUser(userInfo.data.id, req.session.userInfo).catch(() => { });
 
