@@ -64,11 +64,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                syncBtn.innerText = "✅ Done! Check Dashboard";
+                syncBtn.innerText = "✅ Sent! Opening Dashboard...";
                 syncBtn.style.background = "#22c55e";
-                // Clear storage so we don't sync same thing forever
+
+                // Clear storage
                 await chrome.storage.local.remove(['lastFoundShifts']);
-                setTimeout(() => window.close(), 1500);
+
+                // Open the dashboard automatically
+                chrome.tabs.create({ url: 'http://localhost:3000' });
+
+                setTimeout(() => window.close(), 2000);
             } else {
                 throw new Error("Dashboard Error");
             }
