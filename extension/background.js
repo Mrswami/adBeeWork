@@ -1,5 +1,5 @@
 /**
- * background.js - Handles side panel behavior for Chrome
+ * background.js - Handles side panel and sidebar behavior
  */
 
 // Chrome specific: Open the side panel when the toolbar icon is clicked
@@ -9,9 +9,24 @@ if (typeof chrome !== 'undefined' && chrome.sidePanel && chrome.sidePanel.setPan
         .catch((error) => console.error(error));
 }
 
-// Optional: Listener for messages from content scripts
+// Firefox specific: Toggle the sidebar when the toolbar icon is clicked
+if (typeof browser !== 'undefined' && browser.sidebarAction) {
+    browser.action.onClicked.addListener(() => {
+        browser.sidebarAction.toggle();
+    });
+} else if (typeof chrome !== 'undefined' && chrome.action) {
+    // Fallback for Chrome if setPanelBehavior above isn't supported for some reason
+    chrome.action.onClicked.addListener((tab) => {
+        if (chrome.sidePanel) {
+            chrome.sidePanel.open({ windowId: tab.windowId });
+        }
+    });
+}
+
+// Global listener for found shifts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.type === 'REFRESH_DASHBOARD') {
-        // We could trigger a reload of the sidebar iframe here if needed
+    if (message.type === 'SHIFTS_FOUND') {
+        console.log("🐝 Shifts detected in background:", message.count);
+        // Optional: Could trigger a notification here
     }
 });
