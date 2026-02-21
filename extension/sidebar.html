@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>adBeeWork Sidebar</title>
+    <title>adBeeWork</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&display=swap');
 
@@ -42,11 +42,10 @@
             width: 100%;
             height: 100%;
             border: none;
-            background: #0f172a;
         }
 
         .btn {
-            margin-top: 20px;
+            margin-top: 16px;
             padding: 12px 24px;
             background: #FDBB2D;
             color: #000;
@@ -56,6 +55,7 @@
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
+            font-family: inherit;
         }
 
         .bee {
@@ -79,42 +79,48 @@
 </head>
 
 <body>
-
     <div id="status" class="status-container">
         <div class="bee">🐝</div>
         <div id="status-text">Connecting to adBeeWork...</div>
-        <p style="font-size: 13px; color: #94a3b8; margin-top: 10px;">Make sure your local server is running.</p>
-        <a href="http://localhost:3000" target="_blank" class="btn">Open in New Tab</a>
+        <p id="status-sub" style="font-size: 13px; color: #94a3b8; margin-top: 10px;"></p>
+        <a id="fallback-btn" href="#" class="btn" style="display:none">Open in New Tab</a>
     </div>
-
-    <iframe id="dashboard-frame" src="http://localhost:3000" allow="clipboard-write"></iframe>
+    <iframe id="dashboard-frame" src="" allow="clipboard-write"></iframe>
 
     <script>
-        const frame = document.getElementById('dashboard-frame');
-        const statusDiv = document.getElementById('status');
-        const statusText = document.getElementById('status-text');
+        // ─── Config ───────────────────────────────────────────────────────────────
+        const LOCAL_URL = 'http://localhost:3000';
+        const PROD_URL = 'https://adbee-work.vercel.app'; // Updated after Vercel deploy
 
-        // Check if the server is actually there
-        fetch('http://localhost:3000/auth/status')
+        const frame = document.getElementById('dashboard-frame');
+        const statusD = document.getElementById('status');
+        const statusT = document.getElementById('status-text');
+        const statusS = document.getElementById('status-sub');
+        const btn = document.getElementById('fallback-btn');
+
+        function loadDashboard(url) {
+            frame.src = url;
+            btn.href = url;
+            btn.style.display = 'inline-block';
+
+            // If the frame loads, hide the overlay
+            frame.onload = () => setTimeout(() => statusD.classList.add('hidden'), 500);
+        }
+
+        // Try local first, fall back to production
+        fetch(LOCAL_URL + '/auth/status', { signal: AbortSignal.timeout(2000) })
             .then(res => {
                 if (res.ok) {
-                    // Server is up! Give it a second then hide the overlay
-                    setTimeout(() => {
-                        statusDiv.classList.add('hidden');
-                    }, 1000);
+                    statusT.innerText = 'Loading from local server...';
+                    loadDashboard(LOCAL_URL);
                 }
             })
-            .catch(err => {
-                statusText.innerText = "Local Server Not Found";
-                statusText.style.color = "#ef4444";
+            .catch(() => {
+                // Local not running — use production
+                statusT.innerText = 'Loading adBeeWork...';
+                statusS.innerText = 'Using cloud dashboard';
+                loadDashboard(PROD_URL);
             });
-
-        // Also listen for a message from the frame if it manages to load
-        window.addEventListener('message', (event) => {
-            if (event.origin === 'http://localhost:3000') {
-                statusDiv.classList.add('hidden');
-            }
-        });
     </script>
 </body>
 
