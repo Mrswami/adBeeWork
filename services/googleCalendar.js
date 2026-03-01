@@ -141,6 +141,7 @@ async function checkEventExists(tokens, title, startDateTime) {
 }
 
 module.exports = {
+  createOAuthClient,
   getAuthUrl,
   getTokensFromCode,
   getAuthorizedClient,

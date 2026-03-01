@@ -35,8 +35,8 @@ app.use(session({
   name: 'adbee-session',
   secret: process.env.SESSION_SECRET || 'adbee-dev-secret',
   maxAge: 24 * 60 * 60 * 1000,
-  secure: true,
-  sameSite: 'none'
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
 }));
 
 app.use(express.static(path.join(__dirname, 'public')));

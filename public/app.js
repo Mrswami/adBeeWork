@@ -137,26 +137,86 @@ async function saveAndFetch() {
 
 function renderSchedules(items) {
   const container = document.getElementById('schedules-list');
+
   if (!items.length) {
-    container.innerHTML = '<div class="card" style="grid-column: 1/-1; text-align:center;">No upcoming shifts found.</div>';
+    container.innerHTML = '<div class="card" style="grid-column: 1/-1; text-align:center; padding: 3rem;">No upcoming shifts found.</div>';
     document.getElementById('sync-action-container').classList.add('hidden');
     return;
   }
 
   document.getElementById('sync-action-container').classList.remove('hidden');
-  container.innerHTML = items.map(s => {
-    const start = new Date(s.start);
-    const dateStr = start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-    const timeStr = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  // ── Week anchor logic ─────────────────────────────────────────────────
+  // If today is Thu(4), Fri(5), or Sat(6), show next week Mon as anchor
+  const today = new Date();
+  const dow = today.getDay(); // 0=Sun, 1=Mon … 6=Sat
+  const midWeekThreshold = 4; // Thursday
+
+  // Days from today back to Monday (or forward if past mid-week)
+  let offsetToMonday;
+  if (dow === 0) offsetToMonday = -6; // Sunday → go back 6 to last Mon
+  else offsetToMonday = 1 - dow;       // Mon=0, Tue=-1, ...
+
+  // If past mid-week, jump to NEXT Monday instead
+  if (dow >= midWeekThreshold) offsetToMonday += 7;
+
+  const weekStart = new Date(today);
+  weekStart.setHours(0, 0, 0, 0);
+  weekStart.setDate(today.getDate() + offsetToMonday);
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + i);
+    return d;
+  });
+
+  // Index shifts by date string YYYY-MM-DD
+  const byDate = {};
+  for (const s of items) {
+    const key = new Date(s.start).toISOString().slice(0, 10);
+    if (!byDate[key]) byDate[key] = [];
+    byDate[key].push(s);
+  }
+
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const todayKey = today.toISOString().slice(0, 10);
+
+  const cols = days.map(day => {
+    const key = day.toISOString().slice(0, 10);
+    const isToday = key === todayKey;
+    const shifts = byDate[key] || [];
+
+    const shiftHtml = shifts.length
+      ? shifts.map(s => {
+        const start = new Date(s.start);
+        const timeStr = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return `
+            <div class="shift-card animate-in selected" id="shift-${s.id}" onclick="toggleShiftSelection('${s.id}')" style="margin-bottom: 0.5rem; padding: 0.6rem 0.75rem;">
+              <div class="shift-title" style="font-size: 0.8rem;">${s.title}</div>
+              <div class="shift-time" style="font-size: 0.7rem;">${timeStr}${s.location ? ' · ' + s.location : ''}</div>
+            </div>`;
+      }).join('')
+      : `<div style="height: 3rem; border: 1px dashed var(--glass-border); border-radius: 10px; opacity: 0.3;"></div>`;
 
     return `
-      <div class="shift-card animate-in selected" id="shift-${s.id}" onclick="toggleShiftSelection('${s.id}')">
-        <div class="shift-date">${dateStr}</div>
-        <div class="shift-title">${s.title}</div>
-        <div class="shift-time">${timeStr} • ${s.location || 'No location'}</div>
-      </div>
-    `;
+      <div style="min-width: 0;">
+        <div style="text-align:center; margin-bottom: 0.5rem;">
+          <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">${dayNames[day.getDay()]}</div>
+          <div style="font-size: 1.25rem; font-weight: ${isToday ? '800' : '400'};
+            color: ${isToday ? 'var(--primary)' : 'inherit'};
+            background: ${isToday ? 'rgba(99,102,241,0.15)' : 'transparent'};
+            border-radius: 50%; width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+            ${day.getDate()}
+          </div>
+        </div>
+        ${shiftHtml}
+      </div>`;
   }).join('');
+
+  container.innerHTML = `
+    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem; grid-column: 1 / -1;">
+      ${cols}
+    </div>`;
 }
 
 function toggleShiftSelection(id) {

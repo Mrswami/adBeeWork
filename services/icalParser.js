@@ -5,6 +5,9 @@ const ical = require('node-ical');
  * Returns an array of confirmed shift/schedule objects.
  */
 async function parseSocialSchedulesFeed(icalUrl) {
+  // webcal:// is semantically identical to https:// — normalize it
+  if (icalUrl) icalUrl = icalUrl.replace(/^webcals?:\/\//i, 'https://');
+
   if (!icalUrl || !icalUrl.startsWith('http')) {
     throw new Error('Invalid iCal URL. Paste the calendar URL from SocialSchedules > Settings > Calendar Sync.');
   }

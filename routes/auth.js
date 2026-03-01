@@ -43,6 +43,13 @@ router.get('/callback', async (req, res) => {
     // Save/update user in Firestore (non-blocking)
     await upsertUser(userInfo.data.id, req.session.userInfo).catch(() => { });
 
+    // Restore saved settings (iCal URL etc.) from Firestore into session
+    try {
+      const { getUser } = require('../services/firebase');
+      const saved = await getUser(userInfo.data.id);
+      if (saved?.settings?.icalUrl) req.session.icalUrl = saved.settings.icalUrl;
+    } catch (_) { }
+
     res.redirect('/?auth=success');
   } catch (err) {
     console.error('OAuth error:', err.message);
