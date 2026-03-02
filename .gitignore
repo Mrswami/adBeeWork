@@ -3,3 +3,5 @@ node_modules
 *.json.bak
 test_results.json
 eslint_output.txt
+.vercel
+.env*.local

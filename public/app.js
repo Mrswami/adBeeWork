@@ -146,27 +146,13 @@ function renderSchedules(items) {
 
   document.getElementById('sync-action-container').classList.remove('hidden');
 
-  // ── Week anchor logic ─────────────────────────────────────────────────
-  // If today is Thu(4), Fri(5), or Sat(6), show next week Mon as anchor
+  // Always start from today, show 7 days forward
   const today = new Date();
-  const dow = today.getDay(); // 0=Sun, 1=Mon … 6=Sat
-  const midWeekThreshold = 4; // Thursday
-
-  // Days from today back to Monday (or forward if past mid-week)
-  let offsetToMonday;
-  if (dow === 0) offsetToMonday = -6; // Sunday → go back 6 to last Mon
-  else offsetToMonday = 1 - dow;       // Mon=0, Tue=-1, ...
-
-  // If past mid-week, jump to NEXT Monday instead
-  if (dow >= midWeekThreshold) offsetToMonday += 7;
-
-  const weekStart = new Date(today);
-  weekStart.setHours(0, 0, 0, 0);
-  weekStart.setDate(today.getDate() + offsetToMonday);
+  today.setHours(0, 0, 0, 0);
 
   const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(weekStart);
-    d.setDate(weekStart.getDate() + i);
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
     return d;
   });
 
@@ -329,6 +315,9 @@ async function loadMessages(groupId) {
   const container = document.getElementById('gm-messages');
   container.innerHTML = '<div style="margin:auto;">Loading messages...</div>';
 
+  // Load chat and swap board in parallel
+  loadSwapBoard(groupId);
+
   try {
     const res = await fetch(`/api/groupme/messages/${groupId}`);
     const messages = await res.json();
@@ -342,6 +331,53 @@ async function loadMessages(groupId) {
   } catch (err) {
     showToast('Failed to load messages', 'error');
   }
+}
+
+async function loadSwapBoard(groupId) {
+  const board = document.getElementById('swap-board');
+  const list = document.getElementById('swap-list');
+  if (!board || !list) return;
+
+  list.innerHTML = '<p style="color:var(--text-muted); font-size:0.8rem; padding:0.5rem 0;">Scanning messages...</p>';
+  board.classList.remove('hidden');
+
+  try {
+    const res = await fetch(`/api/groupme/swaps/${groupId}`);
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error);
+
+    if (data.swaps.length === 0) {
+      list.innerHTML = '<p style="color:var(--text-muted); font-size:0.8rem; padding:0.5rem 0;">No open swap requests found.</p>';
+      return;
+    }
+
+    list.innerHTML = data.swaps.map(s => {
+      const timeAgo = formatTimeAgo(s.createdAt);
+      const dateBadge = s.shiftDateStr
+        ? `<span style="background:rgba(99,102,241,0.15); color:var(--primary); font-size:0.7rem; padding:0.15rem 0.5rem; border-radius:4px; margin-left:0.5rem;">${s.shiftDateStr}</span>`
+        : '';
+      return `
+        <div style="padding:0.75rem 0; border-bottom:1px solid var(--glass-border);">
+          <div style="display:flex; align-items:center; margin-bottom:0.3rem;">
+            <span style="font-weight:600; font-size:0.8rem;">${s.name}</span>
+            ${dateBadge}
+            <span style="margin-left:auto; font-size:0.7rem; color:var(--text-muted);">${timeAgo}</span>
+          </div>
+          <div style="font-size:0.8rem; color:var(--text-muted); line-height:1.4;">${s.text}</div>
+        </div>`;
+    }).join('');
+  } catch (err) {
+    list.innerHTML = `<p style="color:var(--danger); font-size:0.8rem;">${err.message}</p>`;
+  }
+}
+
+function formatTimeAgo(unixSec) {
+  const diff = Math.floor(Date.now() / 1000) - unixSec;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
 }
 
 async function sendGMMessage() {

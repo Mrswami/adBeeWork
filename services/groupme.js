@@ -12,10 +12,10 @@ async function getGroups(accessToken) {
     return response.data.response;
 }
 
-async function getGroupMessages(accessToken, groupId) {
+async function getGroupMessages(accessToken, groupId, limit = 20) {
     if (!accessToken || !groupId) throw new Error('Token and Group ID required');
     const response = await axios.get(`https://api.groupme.com/v3/groups/${groupId}/messages`, {
-        params: { token: accessToken, limit: 20 }
+        params: { token: accessToken, limit: Math.min(limit, 100) }
     });
     return response.data.response.messages;
 }

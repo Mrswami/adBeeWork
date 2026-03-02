@@ -106,6 +106,17 @@
 
       <!-- GroupMe Section -->
       <section id="section-groupme" class="animate-in hidden">
+
+        <!-- Shift Swap Board -->
+        <div class="card hidden" id="swap-board" style="margin-bottom: 1.5rem;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+            <h3 style="margin:0;">🔄 Open Shift Requests</h3>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Future shifts only • Auto-filtered</span>
+          </div>
+          <div id="swap-list">
+            <p class="text-muted">Select a group to scan for swap requests.</p>
+          </div>
+        </div>
         <div class="card">
           <div class="groupme-panel" id="groupme-container">
             <div class="gm-sidebar" id="gm-groups">
@@ -132,7 +143,8 @@
       <section id="section-synccheck" class="animate-in hidden">
 
         <!-- Summary Bar -->
-        <div id="sync-summary-bar" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+        <div id="sync-summary-bar"
+          style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
           <div class="card" style="text-align:center; border-left: 3px solid #10b981;">
             <div id="count-synced" style="font-size: 2rem; font-weight: 800; color: #10b981;">—</div>
             <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">✅ In Sync</div>

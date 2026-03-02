@@ -1,6 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const { getGroups, getGroupMessages, sendMessage } = require('../services/groupme');
+const { parseSwapMessages } = require('../services/swapParser');
+
+// GET /api/groupme/swaps/:groupId — parse shift swap/cover requests
+router.get('/swaps/:groupId', async (req, res) => {
+    try {
+        const token = getGMToken(req);
+        if (!token) return res.status(401).json({ error: 'GroupMe token not found' });
+        const messages = await getGroupMessages(token, req.params.groupId, 100);
+        const swaps = parseSwapMessages(messages);
+        res.json({ swaps, count: swaps.length });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // Middleware to check for authentication or just use env for now
 // Ideally we'd store a user's GroupMe token in Firebase, but for now we'll support both env and query
