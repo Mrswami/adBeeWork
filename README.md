@@ -1,73 +1,44 @@
-# adBeeWork — SocialSchedules → Google Calendar Sync
+# adBeeWork: Silent Calendar Synchronization
 
-Reads your confirmed shifts from the **SocialSchedules** app and automatically creates **Google Calendar** events — silently, with no auto-reply emails sent to anyone.
+A critical bridge between the **SocialSchedules** app and **Google Calendar**. 
 
-## Features
+This system reads confirmed shifts and automatically translates them into Google Calendar events. Crucially, it does this silently—without triggering the cascade of default auto-reply emails and event invitations that plague standard calendar integrations.
 
-- **Sign in with Google** — secure OAuth, no passwords stored
-- **Paste your SocialSchedules iCal URL** — fetches all upcoming confirmed shifts
-- **One-click sync** — creates Google Calendar events for selected shifts
-- **No auto-replies** — `sendUpdates: 'none'` means zero email invites or notifications sent
-- **Optional self-notify** — flip a toggle to send yourself a confirmation email only
-- **Duplicate detection** — skips events already in your calendar
+## The Motif
+**Invisible Infrastructure.**
+Calendar sync tools often generate more noise than the problems they solve. adBeeWork is designed to operate in the background, updating your schedule with zero outward-facing friction. The core principle is that a schedule update should be a personal notification, not a broadcast.
 
 ---
 
-## Setup
+## Operational Mechanics
 
-### 1. Google Cloud Credentials
+- **One-Way Secure Sync:** Uses Google OAuth to securely write shifts to your calendar without ever storing passwords.
+- **Duplicate Aversion:** Intelligently scans existing calendar states to skip previously synced events.
+- **Notification Suppression:** By default, it forces Google's API to use `sendUpdates: 'none'`, meaning absolutely no emails are generated or sent to coworkers or managers attached to the shift data.
+- **Opt-In Auditing:** A toggle allows you to send a quiet confirmation *only to yourself*.
 
-1. Go to [console.cloud.google.com](https://console.cloud.google.com/)
-2. Create a project (or use existing)
-3. Enable **Google Calendar API**
-4. Go to **APIs & Services → Credentials → Create Credentials → OAuth 2.0 Client ID**
-5. Application type: **Web application**
-6. Authorized redirect URI: `http://localhost:3000/auth/callback`
-7. Copy **Client ID** and **Client Secret**
+---
 
-### 2. Environment File
+## System Configuration
 
+### 1. Google OAuth Pipeline
+The app requires an authorized Google Cloud path to perform calendar writes on your behalf.
+- Navigate to the [Google Cloud Console](https://console.cloud.google.com/).
+- Enable the **Google Calendar API**.
+- Generate Web Application OAuth 2.0 credentials with the redirect URI: `http://localhost:3000/auth/callback`.
+
+### 2. Environment Variables
+Map your credentials to the local environment:
 ```bash
 cp .env.example .env
 ```
+Ensure the `.env` file contains your `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and a secure `SESSION_SECRET`.
 
-Edit `.env` and fill in:
-
-```
-GOOGLE_CLIENT_ID=your_client_id
-GOOGLE_CLIENT_SECRET=your_client_secret
-GOOGLE_REDIRECT_URI=http://localhost:3000/auth/callback
-SESSION_SECRET=any_random_string
-```
-
-### 3. Install & Run
-
+### 3. Startup Sequence
 ```bash
 npm install
 npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
-
----
-
-## Getting Your SocialSchedules iCal URL
-
-1. Open the **SocialSchedules** app on your phone
-2. Tap **Menu (☰) → Settings → Calendar Sync**
-3. Tap **Copy Link** (Android calendar link)
-4. Paste it into the app
-
----
-
-## How Auto-Replies Are Suppressed
-
-When creating calendar events via the Google Calendar API, the `sendUpdates` parameter controls notifications:
-
-| Value | Behavior |
-|-------|----------|
-| `'none'` | No emails sent to anyone ✅ (default in this app) |
-| `'all'` | Emails sent to all attendees |
-| `'emailAddress'` | Emails sent to attendees with email addresses |
-
-This app uses `'none'` by default. Enable **"Notify myself"** in the UI to switch to `'all'` — but since no other attendees are added to events, only you receive anything.
+### Operational Workarounds: iCal Extraction
+SocialSchedules does not expose a clean public API for shift data. To extract the data, navigate to the SocialSchedules mobile app: **Settings → Calendar Sync → Copy Link** and feed the resulting iCal URL into the adBeeWork dashboard.

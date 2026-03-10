@@ -34,7 +34,15 @@
               d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
             </path>
           </svg>
-          <span class="nav-text">GroupMe</span>
+          <span class="nav-text">GroupMe Chat</span>
+        </div>
+        <div class="nav-item" onclick="showSection('invites')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+            </path>
+          </svg>
+          <span class="nav-text">Open Invites</span>
         </div>
         <div class="nav-item" onclick="showSection('synccheck')" id="nav-synccheck">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,6 +51,13 @@
             </path>
           </svg>
           <span class="nav-text">Sync Check</span>
+        </div>
+        <div class="nav-item" onclick="showSection('availability')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="nav-text">Availability</span>
         </div>
         <div class="nav-item" onclick="showSection('settings')">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,17 +121,6 @@
 
       <!-- GroupMe Section -->
       <section id="section-groupme" class="animate-in hidden">
-
-        <!-- Shift Swap Board -->
-        <div class="card hidden" id="swap-board" style="margin-bottom: 1.5rem;">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
-            <h3 style="margin:0;">🔄 Open Shift Requests</h3>
-            <span style="font-size:0.75rem; color:var(--text-muted);">Future shifts only • Auto-filtered</span>
-          </div>
-          <div id="swap-list">
-            <p class="text-muted">Select a group to scan for swap requests.</p>
-          </div>
-        </div>
         <div class="card">
           <div class="groupme-panel" id="groupme-container">
             <div class="gm-sidebar" id="gm-groups">
@@ -134,6 +138,63 @@
                 <input type="text" id="gm-input" class="input-field" placeholder="Type a message...">
                 <button class="btn btn-primary" id="btn-gm-send" onclick="sendGMMessage()">Send</button>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Invites Section -->
+      <section id="section-invites" class="animate-in hidden">
+        <div style="margin-bottom: 2rem;">
+          <div id="invites-group-selector" style="display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem;">
+            <!-- Filled by JS -->
+            <p class="text-muted">Loading GroupMe connectivity...</p>
+          </div>
+        </div>
+
+        <div id="invites-grid" class="invites-grid">
+          <!-- Loaded by JS -->
+          <div class="card" style="grid-column: 1/-1; text-align:center; padding: 4rem;">
+            <h3>Marketplace for Open Shifts</h3>
+            <p class="text-muted">Select a group above to scan for coworkers looking for coverage or swaps.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Availability Section -->
+      <section id="section-availability" class="animate-in hidden">
+        <div class="card" style="margin-bottom: 2rem;">
+          <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3>My Weekly Availability</h3>
+            <span class="badge" style="background: rgba(16,185,129,0.1); color: #22c55e;">SocialSchedules Sync</span>
+          </div>
+          <div id="availability-grid-container">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex; align-items:center; gap: 1rem; margin-bottom: 1.5rem;">
+            <div
+              style="width: 40px; height: 40px; background: var(--primary); border-radius: 10px; display:flex; align-items:center; justify-content:center; color: #000; font-size: 1.25rem;">
+              ℹ️</div>
+            <div>
+              <h4 style="margin:0">W2W Click Guide</h4>
+              <p class="text-muted" style="margin:0; font-size: 0.875rem;">Mirror these blocks into your WhenToWork grid
+                to keep your preferred hours.</p>
+            </div>
+          </div>
+          <div id="w2w-helper-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 1rem;">
+            <!-- Rendered by JS -->
+          </div>
+          <div
+            style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); display: flex; gap: 2rem; justify-content: center;">
+            <div style="display:flex; align-items:center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+              <div style="width: 12px; height: 12px; background: #22c55e; border-radius: 2px;"></div> Prefer
+            </div>
+            <div style="display:flex; align-items:center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+              <div style="width: 12px; height: 12px; border: 1px solid var(--glass-border); border-radius: 2px;"></div>
+              No Preference
             </div>
           </div>
         </div>

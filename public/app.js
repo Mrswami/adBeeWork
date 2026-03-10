@@ -32,20 +32,87 @@ function showSection(name) {
     target.classList.remove('hidden');
 
     // Header updates
-    const titles = { shifts: 'My Work Shifts', groupme: 'GroupMe Chat', settings: 'App Settings', synccheck: 'Sync Check' };
+    const titles = {
+      shifts: 'My Work Shifts',
+      groupme: 'GroupMe Chat',
+      invites: 'Marketplace',
+      availability: 'Availability Bridge',
+      settings: 'App Settings',
+      synccheck: 'Sync Check'
+    };
     const subs = {
       shifts: 'Manage your SocialSchedules and sync to Google Calendar.',
       groupme: 'Stay in touch with your coworkers.',
+      invites: 'Open coverage and swap requests from your coworkers.',
+      availability: 'Translate your SocialSchedules availability to the new W2W system.',
       settings: 'Manage your preferences and platform connections.',
-      synccheck: 'Compare SocialSchedules, Google Calendar, and your app — all in one view.'
+      synccheck: 'Compare SocialSchedules, Google Calendar, and your app.'
     };
     document.getElementById('main-title').innerText = titles[name] || 'adBeeWork';
     document.getElementById('main-subtitle').innerText = subs[name] || '';
 
     // Specific logic per section
     if (name === 'groupme') loadGroupMe();
+    if (name === 'invites') loadInvites();
     if (name === 'synccheck') runSyncCheck();
+    if (name === 'availability') renderAvailability();
   }
+}
+
+// ─── Availability ──────────────────────────────────────────────────────────
+
+const MY_AVAILABILITY = [
+  { day: 'Mon', start: '15:15', end: '22:15' },
+  { day: 'Tue', start: '15:15', end: '22:15' },
+  { day: 'Wed', start: '15:15', end: '22:15' },
+  { day: 'Thu', start: '15:15', end: '22:15' },
+  { day: 'Fri', start: '16:45', end: '22:15' },
+  { day: 'Sat', start: '16:45', end: '22:15' },
+  { day: 'Sun', start: '17:45', end: '22:15' }
+];
+
+function renderAvailability() {
+  const container = document.getElementById('availability-grid-container');
+  const helper = document.getElementById('w2w-helper-grid');
+
+  container.innerHTML = MY_AVAILABILITY.map(a => `
+    <div style="display:flex; align-items:center; justify-content:space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--glass-border);">
+      <div style="font-weight:600; width: 50px;">${a.day}</div>
+      <div class="badge" style="background: rgba(99,102,241,0.1); color: var(--primary); font-family: monospace;">
+        ${formatTime(a.start)} - ${formatTime(a.end)}
+      </div>
+    </div>
+  `).join('');
+
+  helper.innerHTML = MY_AVAILABILITY.map(a => {
+    const startHour = parseInt(a.start.split(':')[0]);
+    const endHour = parseInt(a.end.split(':')[0]);
+
+    let hoursHtml = '';
+    for (let h = 0; h < 24; h++) {
+      const isAvailable = h >= startHour && h < endHour;
+      const color = isAvailable ? '#10b981' : 'transparent';
+      const border = isAvailable ? 'none' : '1px solid var(--glass-border)';
+      hoursHtml += `<div style="height: 12px; background: ${color}; border: ${border}; border-radius: 2px; margin-bottom: 2px;" title="${h}:00"></div>`;
+    }
+
+    return `
+      <div>
+        <div style="text-align:center; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.5rem;">${a.day}</div>
+        <div style="background: rgba(0,0,0,0.2); border-radius: 4px; padding: 4px;">
+          ${hoursHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function formatTime(t24) {
+  const [h, m] = t24.split(':');
+  const hh = parseInt(h);
+  const ampm = hh >= 12 ? 'p' : 'a';
+  const displayH = hh % 12 || 12;
+  return `${displayH}:${m}${ampm}`;
 }
 
 // ─── Authentication ──────────────────────────────────────────────────────────
@@ -315,8 +382,8 @@ async function loadMessages(groupId) {
   const container = document.getElementById('gm-messages');
   container.innerHTML = '<div style="margin:auto;">Loading messages...</div>';
 
-  // Load chat and swap board in parallel
-  loadSwapBoard(groupId);
+  // Load chat in parallel
+  // loadSwapBoard(groupId); // Moved to invites section
 
   try {
     const res = await fetch(`/api/groupme/messages/${groupId}`);
@@ -333,43 +400,106 @@ async function loadMessages(groupId) {
   }
 }
 
-async function loadSwapBoard(groupId) {
-  const board = document.getElementById('swap-board');
-  const list = document.getElementById('swap-list');
-  if (!board || !list) return;
+async function loadInvites(groupId = null) {
+  const selector = document.getElementById('invites-group-selector');
+  const grid = document.getElementById('invites-grid');
 
-  list.innerHTML = '<p style="color:var(--text-muted); font-size:0.8rem; padding:0.5rem 0;">Scanning messages...</p>';
-  board.classList.remove('hidden');
+  if (!selector || !grid) return;
+
+  // 1. Load groups if selector is empty
+  if (selector.children.length <= 1) {
+    try {
+      const res = await fetch('/api/groupme/groups');
+      const groups = await res.json();
+      if (!res.ok) throw new Error();
+
+      selector.innerHTML = groups.map(g => `
+          <div class="invite-group-pill ${currentGroupId === g.id ? 'active' : ''}" 
+               onclick="loadInvites('${g.id}')" id="invite-pill-${g.id}">
+            ${g.name}
+          </div>
+      `).join('');
+
+      // Auto-load first group if none selected
+      if (!groupId && !currentGroupId && groups.length > 0) {
+        return loadInvites(groups[0].id);
+      }
+    } catch (e) {
+      selector.innerHTML = '<p class="text-muted">Connect GroupMe in Settings to see invites.</p>';
+      return;
+    }
+  }
+
+  const tid = groupId || currentGroupId;
+  if (!tid) return;
+
+  // Update selection UI
+  currentGroupId = tid;
+  document.querySelectorAll('.invite-group-pill').forEach(p => p.classList.remove('active'));
+  const activePill = document.getElementById('invite-pill-' + tid);
+  if (activePill) activePill.classList.add('active');
+
+  grid.innerHTML = `
+    <div style="grid-column: 1/-1; text-align:center; padding: 4rem;">
+        <div style="width: 40px; height: 40px; border: 3px solid var(--primary); border-top-color: transparent; border-radius:50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+        <p class="text-muted">Sifting through messages for ${activePill ? activePill.innerText : 'group'}...</p>
+    </div>
+  `;
 
   try {
-    const res = await fetch(`/api/groupme/swaps/${groupId}`);
+    const res = await fetch(`/api/groupme/swaps/${tid}`);
     const data = await res.json();
 
     if (!res.ok) throw new Error(data.error);
 
     if (data.swaps.length === 0) {
-      list.innerHTML = '<p style="color:var(--text-muted); font-size:0.8rem; padding:0.5rem 0;">No open swap requests found.</p>';
+      grid.innerHTML = `
+        <div class="card" style="grid-column: 1/-1; text-align:center; padding: 4rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🏝️</div>
+            <h3>All Quiet!</h3>
+            <p class="text-muted">No open shift requests found in this group lately.</p>
+        </div>`;
       return;
     }
 
-    list.innerHTML = data.swaps.map(s => {
+    grid.innerHTML = data.swaps.map(s => {
       const timeAgo = formatTimeAgo(s.createdAt);
-      const dateBadge = s.shiftDateStr
-        ? `<span style="background:rgba(99,102,241,0.15); color:var(--primary); font-size:0.7rem; padding:0.15rem 0.5rem; border-radius:4px; margin-left:0.5rem;">${s.shiftDateStr}</span>`
-        : '';
+      const defaultAvatar = 'https://img.icons8.com/clouds/100/user.png';
+      const avatar = s.avatarUrl || defaultAvatar;
+
       return `
-        <div style="padding:0.75rem 0; border-bottom:1px solid var(--glass-border);">
-          <div style="display:flex; align-items:center; margin-bottom:0.3rem;">
-            <span style="font-weight:600; font-size:0.8rem;">${s.name}</span>
-            ${dateBadge}
-            <span style="margin-left:auto; font-size:0.7rem; color:var(--text-muted);">${timeAgo}</span>
+        <div class="invite-card animate-in">
+          <div class="invite-header">
+            <img src="${avatar}" class="invite-avatar" onerror="this.src='${defaultAvatar}'">
+            <div class="invite-user-info">
+              <div class="invite-name">${s.name}</div>
+              <div class="invite-meta">${timeAgo}</div>
+            </div>
           </div>
-          <div style="font-size:0.8rem; color:var(--text-muted); line-height:1.4;">${s.text}</div>
+          <div class="invite-body">
+            "${s.text}"
+          </div>
+          <div class="invite-footer">
+            <div class="invite-date-badge">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                ${s.shiftDateStr || 'Upcoming'}
+            </div>
+            <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;" onclick="viewInChat('${tid}')">
+                View Chat
+            </button>
+          </div>
         </div>`;
     }).join('');
   } catch (err) {
-    list.innerHTML = `<p style="color:var(--danger); font-size:0.8rem;">${err.message}</p>`;
+    grid.innerHTML = `<div class="card" style="grid-column: 1/-1; text-align:center; padding: 2rem; color: var(--danger)">${err.message}</div>`;
   }
+}
+
+function viewInChat(groupId) {
+  showSection('groupme');
+  loadMessages(groupId);
 }
 
 function formatTimeAgo(unixSec) {
