@@ -65,7 +65,7 @@ class AvailabilityScreen extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: Colors.green.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: BorderSide(color: Colors.green.withOpacity(0.3)),
+                border: Border.all(color: Colors.green.withOpacity(0.3)),
               ),
               child: const Row(
                 children: [
@@ -111,7 +111,7 @@ class AvailabilityScreen extends ConsumerWidget {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(20),
-            border: BorderSide(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
           ),
           child: Row(
             children: [
@@ -170,7 +170,7 @@ class AvailabilityScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Colors.amber.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: BorderSide(color: Colors.amber.withOpacity(0.3)),
+        border: Border.all(color: Colors.amber.withOpacity(0.3)),
       ),
       child: Text(
         block.formattedRange,

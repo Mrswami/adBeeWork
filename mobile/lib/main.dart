@@ -27,7 +27,7 @@ class AdBeeWorkMobile extends StatelessWidget {
         brightness: Brightness.dark,
         primarySwatch: Colors.amber,
         scaffoldBackgroundColor: const Color(0xFF0F0F0F),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: Colors.white.withOpacity(0.05),
           elevation: 0,
           shape: RoundedRectangleBorder(

@@ -31,7 +31,7 @@ class W2WGridHelper extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isPreferred ? Colors.green.withOpacity(0.4) : Colors.red.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(4),
-                  border: BorderSide(
+                  border: Border.all(
                     color: isPreferred ? Colors.green.withOpacity(0.6) : Colors.white.withOpacity(0.05),
                     width: 0.5,
                   ),
