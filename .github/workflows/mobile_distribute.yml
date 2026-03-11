@@ -43,7 +43,9 @@ jobs:
           flutter build apk --debug 
 
       - name: Create Service Account Key File
-        run: echo '${{ secrets.HIVE_JSON }}' > service-account-key.json
+        env:
+          SERVICE_ACCOUNT_JSON: ${{ secrets.HIVE_JSON }}
+        run: echo "$SERVICE_ACCOUNT_JSON" > service-account-key.json
 
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
