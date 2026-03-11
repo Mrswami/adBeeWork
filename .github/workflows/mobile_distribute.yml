@@ -34,7 +34,7 @@ jobs:
           if [ -n "${{ secrets.GOOGLE_SERVICES_JSON }}" ]; then
             echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > mobile/android/app/google-services.json
           else
-            echo '{"project_info":{"project_number":"0","project_id":"placeholder","storage_bucket":"placeholder.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"${{ secrets.FIREBASE_APP_ID_ANDROID }}","android_client_info":{"package_name":"com.mrswami.scheduleassistant"}},"api_key":[{"current_key":"placeholder"}],"services":{"appinvite_service":{"status":1}}}]}' > mobile/android/app/google-services.json
+            echo '{"project_info":{"project_number":"0","project_id":"placeholder","storage_bucket":"placeholder.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"${{ secrets.FIREBASE_ANDROID_APP_ID }}","android_client_info":{"package_name":"com.mrswami.scheduleassistant"}},"api_key":[{"current_key":"placeholder"}],"services":{"appinvite_service":{"status":1}}}]}' > mobile/android/app/google-services.json
           fi
 
       - name: Build Android APK (Debug)
@@ -45,7 +45,7 @@ jobs:
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
-          appId: ${{ secrets.FIREBASE_APP_ID_ANDROID }}
+          appId: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
           serviceCredentialsFileContent: ${{ secrets.HIVE_JSON }}
           groups: testers
           file: mobile/build/app/outputs/flutter-apk/app-debug.apk
