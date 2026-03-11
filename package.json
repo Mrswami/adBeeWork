@@ -1,5 +1,5 @@
 {
-  "name": "adbee-work",
+  "name": "schedule-assistant",
   "version": "1.0.0",
   "description": "Sync SocialSchedules confirmed shifts to Google Calendar automatically",
   "main": "server.js",
