@@ -42,11 +42,14 @@ jobs:
           cd mobile
           flutter build apk --debug 
 
+      - name: Create Service Account Key File
+        run: echo '${{ secrets.HIVE_JSON }}' > service-account-key.json
+
       - name: Upload to Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1.7.0
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
-          serviceCredentialsFileContent: ${{ secrets.HIVE_JSON }}
+          serviceCredentialsFile: service-account-key.json
           groups: testers
           file: mobile/build/app/outputs/flutter-apk/app-debug.apk
           debug: true
