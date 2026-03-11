@@ -28,9 +28,9 @@ module.exports = [
             }
         }
     },
-    // Browser files
+    // Browser & Extension files
     {
-        files: ["public/**/*.js"],
+        files: ["public/**/*.js", "extension/**/*.js"],
         languageOptions: {
             globals: {
                 window: "readonly",
@@ -40,9 +40,14 @@ module.exports = [
                 location: "readonly",
                 setTimeout: "readonly",
                 clearTimeout: "readonly",
+                setInterval: "readonly",
+                clearInterval: "readonly",
                 alert: "readonly",
                 URLSearchParams: "readonly",
                 Intl: "readonly",
+                chrome: "readonly",
+                browser: "readonly",
+                AbortSignal: "readonly",
             }
         },
         rules: {
