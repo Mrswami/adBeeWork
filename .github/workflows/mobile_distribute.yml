@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'mobile/**'
+      - '.github/workflows/mobile_distribute.yml'
 
 jobs:
   distribute:
