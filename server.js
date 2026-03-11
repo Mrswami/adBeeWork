@@ -32,8 +32,8 @@ app.use(express.json());
 
 // Session MUST come before static files
 app.use(session({
-  name: 'adbee-session',
-  secret: process.env.SESSION_SECRET || 'adbee-dev-secret',
+  name: 'schedule-assistant-session',
+  secret: process.env.SESSION_SECRET || 'schedule-assistant-dev-secret',
   maxAge: 24 * 60 * 60 * 1000,
   secure: process.env.NODE_ENV === 'production',
   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
@@ -58,7 +58,7 @@ app.get('*', (req, res) => {
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
-    console.log(`adBeeWork running at http://localhost:${PORT}`);
+    console.log(`Schedule Assistant running at http://localhost:${PORT}`);
   });
 }
 

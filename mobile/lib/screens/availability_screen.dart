@@ -52,7 +52,7 @@ class AvailabilityScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'ADBEEWORK',
+              'SCHEDULE ASSISTANT',
               style: TextStyle(
                 color: Colors.amber,
                 fontSize: 12,
@@ -82,7 +82,7 @@ class AvailabilityScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         const Text(
-          'Social Scheduler',
+          'Schedule Assistant',
           style: TextStyle(
             color: Colors.white,
             fontSize: 32,

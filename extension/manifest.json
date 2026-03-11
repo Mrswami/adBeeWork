@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "adBeeWork",
+    "name": "Schedule Assistant",
     "version": "2.1",
     "description": "Your premium work schedule dashboard, right in your browser sidebar.",
     "permissions": [
@@ -17,7 +17,7 @@
     ],
     "action": {
         "default_icon": "icon.svg",
-        "default_title": "Open adBeeWork Dashboard"
+        "default_title": "Open Schedule Assistant Dashboard"
     },
     "icons": {
         "48": "icon.svg",
@@ -49,7 +49,7 @@
     ],
     "browser_specific_settings": {
         "gecko": {
-            "id": "connector@adbeework.local"
+            "id": "connector@scheduleassistant.local"
         }
     }
 }

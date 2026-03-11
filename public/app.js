@@ -6,8 +6,8 @@ let groupMeToken = null;
 // ─── Initialization ──────────────────────────────────────────────────────────
 
 window.addEventListener('DOMContentLoaded', async () => {
-  console.log('🐝 adBeeWork: Dashboard Loaded');
-  window.parent.postMessage('AD_BEE_LOADED', '*');
+  console.log('📅 Schedule Assistant: Dashboard Loaded');
+  window.parent.postMessage('SCHEDULE_ASSISTANT_LOADED', '*');
   await checkAuth();
 
   // Auto-fetch shifts if URL is already there
@@ -34,7 +34,7 @@ function showSection(name) {
     // Header updates
     const titles = {
       shifts: 'My Work Shifts',
-      groupme: 'GroupMe Chat',
+      groupme: 'Team Chat',
       invites: 'Marketplace',
       availability: 'Availability Bridge',
       settings: 'App Settings',
@@ -48,7 +48,7 @@ function showSection(name) {
       settings: 'Manage your preferences and platform connections.',
       synccheck: 'Compare SocialSchedules, Google Calendar, and your app.'
     };
-    document.getElementById('main-title').innerText = titles[name] || 'adBeeWork';
+    document.getElementById('main-title').innerText = titles[name] || 'Schedule Assistant';
     document.getElementById('main-subtitle').innerText = subs[name] || '';
 
     // Specific logic per section
@@ -425,7 +425,7 @@ async function loadInvites(groupId = null) {
         return loadInvites(groups[0].id);
       }
     } catch (e) {
-      selector.innerHTML = '<p class="text-muted">Connect GroupMe in Settings to see invites.</p>';
+      selector.innerHTML = '<p class="text-muted">Connect Team Chat in Settings to see invites.</p>';
       return;
     }
   }

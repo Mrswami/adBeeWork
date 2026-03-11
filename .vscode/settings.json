@@ -1,0 +1,24 @@
+{
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#cc9a1b",
+        "activityBar.background": "#cc9a1b",
+        "activityBar.foreground": "#15202b",
+        "activityBar.inactiveForeground": "#15202b99",
+        "activityBarBadge.background": "#abf4df",
+        "activityBarBadge.foreground": "#15202b",
+        "commandCenter.border": "#e7e7e799",
+        "sash.hoverBorder": "#cc9a1b",
+        "statusBar.background": "#9f7815",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#cc9a1b",
+        "statusBarItem.remoteBackground": "#9f7815",
+        "statusBarItem.remoteForeground": "#e7e7e7",
+        "titleBar.activeBackground": "#9f7815",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#9f781599",
+        "titleBar.inactiveForeground": "#e7e7e799"
+    },
+    "peacock.color": "#9f7815",
+    "cmake.sourceDirectory": "C:/Cursor Projects/adBeeWork/mobile/linux",
+    "java.configuration.updateBuildConfiguration": "interactive"
+}

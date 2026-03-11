@@ -1,4 +1,4 @@
-# adBeeWork: Silent Calendar Synchronization
+# Schedule Assistant: Silent Calendar Synchronization
 
 A critical bridge between the **SocialSchedules** app and **Google Calendar**. 
 
@@ -6,7 +6,7 @@ This system reads confirmed shifts and automatically translates them into Google
 
 ## The Motif
 **Invisible Infrastructure.**
-Calendar sync tools often generate more noise than the problems they solve. adBeeWork is designed to operate in the background, updating your schedule with zero outward-facing friction. The core principle is that a schedule update should be a personal notification, not a broadcast.
+Calendar sync tools often generate more noise than the problems they solve. Schedule Assistant is designed to operate in the background, updating your schedule with zero outward-facing friction. The core principle is that a schedule update should be a personal notification, not a broadcast.
 
 ---
 
@@ -41,4 +41,4 @@ npm start
 ```
 
 ### Operational Workarounds: iCal Extraction
-SocialSchedules does not expose a clean public API for shift data. To extract the data, navigate to the SocialSchedules mobile app: **Settings → Calendar Sync → Copy Link** and feed the resulting iCal URL into the adBeeWork dashboard.
+SocialSchedules does not expose a clean public API for shift data. To extract the data, navigate to the SocialSchedules mobile app: **Settings → Calendar Sync → Copy Link** and feed the resulting iCal URL into the Schedule Assistant dashboard.
