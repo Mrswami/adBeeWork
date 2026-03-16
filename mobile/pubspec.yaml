@@ -1,4 +1,5 @@
 name: scheduleassistant
+# Trigger fresh distribution run for rebranding and unified hosting fix
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
