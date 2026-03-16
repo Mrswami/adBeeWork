@@ -19,15 +19,41 @@ const PORT = process.env.PORT || 3000;
 
 app.set('trust proxy', 1);
 
-// Aggressive framing permission
+// Allowed origins: Firebase Hosting + local dev
+const ALLOWED_ORIGINS = [
+  'https://scheduleassistant-735d8.web.app',
+  'https://scheduleassistant-735d8.firebaseapp.com',
+  'chrome-extension://',  // Allow any chrome extension origin prefix
+  'http://localhost:3000',
+];
+
+// Security headers
 app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", "frame-ancestors *");
-  res.removeHeader("X-Frame-Options");
-  res.removeHeader("Frame-Options");
+  const origin = req.headers.origin || '';
+  const isAllowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o));
+  // Allow framing only from our own domain
+  res.setHeader("Content-Security-Policy", `frame-ancestors 'self' https://scheduleassistant-735d8.web.app`);
+  if (!isAllowed) {
+    res.removeHeader("X-Frame-Options");
+  }
+  // Prevent MIME sniffing
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  // Basic XSS protection
+  res.setHeader('X-XSS-Protection', '1; mode=block');
   next();
 });
 
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (server-to-server, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.some(o => origin.startsWith(o))) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // Session MUST come before static files

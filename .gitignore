@@ -1,7 +1,10 @@
 node_modules
 .env
+.env.*
+*.env
+.env.local
+.env*.local
 *.json.bak
 test_results.json
 eslint_output.txt
 .vercel
-.env*.local
