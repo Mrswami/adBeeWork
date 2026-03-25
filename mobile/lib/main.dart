@@ -4,10 +4,83 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
 import 'firebase_options.dart';
 import 'screens/availability_screen.dart';
 import 'screens/shifts_screen.dart';
+
+// --- Onboarding / JITL System ---
+
+class OnboardingManager {
+  static final OnboardingManager instance = OnboardingManager._();
+  OnboardingManager._();
+
+  Future<bool> hasSeen(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('seen_$key') ?? false;
+  }
+
+  Future<void> markSeen(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('seen_$key', true);
+  }
+}
+
+class CyberBeeTip extends StatelessWidget {
+  final String message;
+  final VoidCallback onDismiss;
+
+  const CyberBeeTip({super.key, required this.message, required this.onDismiss});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6366F1).withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: const BoxDecoration(shape: BoxShape.circle),
+            child: ClipOval(child: Image.asset('assets/assistant.png', fit: BoxFit.cover)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('CYBERBEE INSIGHT', 
+                  style: TextStyle(color: Color(0xFF818CF8), fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+                const SizedBox(height: 4),
+                Text(message, style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.4)),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: onDismiss,
+            icon: const Icon(Icons.close, color: Colors.white24, size: 18),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.2, end: 0, curve: Curves.easeOutBack);
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -80,8 +153,9 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int _currentIndex = 0;
-
+  int _selectedIndex = 0;
+  String? _activeTip;
+  
   final List<Widget> _screens = [
     const AvailabilityScreen(),
     const ShiftsScreen(),
@@ -90,11 +164,59 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _checkFirstTime('home', 'Welcome to the Hive! 👋 Your availability here mirrors WhenToWork automatically.');
+  }
+
+  void _checkFirstTime(String key, String message) async {
+    final hasSeen = await OnboardingManager.instance.hasSeen(key);
+    if (!hasSeen) {
+      await Future.delayed(const Duration(seconds: 2)); // Wait for psychological timing
+      if (mounted) {
+        setState(() => _activeTip = message);
+      }
+    }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      _activeTip = null; // Clear old tip
+    });
+    
+    // Check for section-specific tips
+    if (index == 1) _checkFirstTime('shifts', 'This view tracks your Google Calendar. "Red Tomato" shifts are your confirmed work hours.');
+    if (index == 2) _checkFirstTime('sync', 'You can force a manual sync here if the automatic hive heartbeat feels too slow.');
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
+      backgroundColor: const Color(0xFF0B1120),
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: _selectedIndex,
+            children: _screens,
+          ),
+          if (_activeTip != null)
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: CyberBeeTip(
+                message: _activeTip!,
+                onDismiss: () {
+                  setState(() => _activeTip = null);
+                  // We could mark it seen here, but usually, seeing it appear is enough.
+                  // Let's mark it seen so it doesn't nag.
+                  String key = _selectedIndex == 0 ? 'home' : (_selectedIndex == 1 ? 'shifts' : 'sync');
+                  OnboardingManager.instance.markSeen(key);
+                },
+              ),
+            ),
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
