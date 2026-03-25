@@ -85,13 +85,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final List<Widget> _screens = [
     const AvailabilityScreen(),
     const ShiftsScreen(),
+    const Center(child: Text('Sync Service Active', style: TextStyle(color: Colors.white24))),
+    const Center(child: Text('Settings Managed by Admin', style: TextStyle(color: Colors.white24))),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(
-        index: _currentIndex == 1 ? 1 : 0, // Simplified for now since index 0/1 are Availability/Shifts
+        index: _currentIndex,
         children: _screens,
       ),
       bottomNavigationBar: Container(
@@ -102,9 +104,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
-            if (index < 2) {
-              setState(() => _currentIndex = index);
-            }
+            setState(() => _currentIndex = index);
           },
           backgroundColor: Colors.transparent,
           elevation: 0,

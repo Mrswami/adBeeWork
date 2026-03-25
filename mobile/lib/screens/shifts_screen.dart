@@ -111,10 +111,15 @@ class ShiftsScreen extends StatelessWidget {
   }
 
   Widget _buildShiftCard(BuildContext context, int index) {
-    final titles = ["Membership - W", "Welcome Center", "Membership - W", "Staff Meeting", "Gym Monitor"];
-    final times = ["4:00 PM - 8:00 PM", "8:00 AM - 12:00 PM", "2:00 PM - 6:00 PM", "1:00 PM - 2:00 PM", "5:00 PM - 9:00 PM"];
+    final shiftData = [
+      {"title": "Membership - W", "time": "4:00 PM - 8:00 PM", "date": "MON, MAR 24"},
+      {"title": "Welcome Center", "time": "8:00 AM - 12:00 PM", "date": "TUE, MAR 25"},
+      {"title": "Membership - W", "time": "2:00 PM - 6:00 PM", "date": "WED, MAR 26"},
+      {"title": "Staff Meeting", "time": "1:00 PM - 2:00 PM", "date": "THU, MAR 27"},
+      {"title": "Gym Monitor", "time": "5:00 PM - 9:00 PM", "date": "FRI, MAR 28"},
+    ];
     
-    return Padding(
+    final shift = shiftData[index % shiftData.length];
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Container(
         decoration: BoxDecoration(
@@ -147,13 +152,22 @@ class ShiftsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          titles[index % titles.length],
-                          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              shift["title"]!,
+                              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              shift["date"]!,
+                              style: const TextStyle(color: Color(0xFF6366F1), fontSize: 10, fontWeight: FontWeight.w800),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          times[index % times.length],
+                          shift["time"]!,
                           style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12),
                         ),
                       ],

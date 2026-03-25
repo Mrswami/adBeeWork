@@ -84,20 +84,26 @@ class AvailabilityScreen extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                const Icon(Icons.dashboard_rounded, color: Color(0xFF6366F1), size: 16),
-                const SizedBox(width: 8),
-                Text(
-                  'ENTERPRISE CONTROL',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: const Color(0xFF6366F1).withOpacity(0.8),
-                    letterSpacing: 3,
-                    fontWeight: FontWeight.bold,
+            Expanded(
+              child: Row(
+                children: [
+                  const Icon(Icons.dashboard_rounded, color: Color(0xFF6366F1), size: 16),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'ENTERPRISE CONTROL',
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: const Color(0xFF6366F1).withOpacity(0.8),
+                        letterSpacing: 3,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+            const SizedBox(width: 8),
             _buildStatusBadge(),
           ],
         ).animate().fadeIn(duration: 800.ms).slideX(begin: -0.1),
