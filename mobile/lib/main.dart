@@ -224,10 +224,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
         ),
         child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() => _currentIndex = index);
-          },
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
           backgroundColor: Colors.transparent,
           elevation: 0,
           selectedItemColor: const Color(0xFF6366F1),
