@@ -9,7 +9,7 @@ initFirebase();
 
 const authRoutes = require('./routes/auth');
 const calendarRoutes = require('./routes/calendar');
-const schedulesRoutes = require('./routes/schedules');
+const { router: schedulesRoutes, getTempShifts } = require('./routes/schedules');
 const userRoutes = require('./routes/user');
 const groupMeRoutes = require('./routes/groupme');
 const syncRoutes = require('./routes/sync');
@@ -25,6 +25,7 @@ const ALLOWED_ORIGINS = [
   'https://scheduleassistant-735d8.firebaseapp.com',
   'chrome-extension://',  // Allow any chrome extension origin prefix
   'http://localhost:3000',
+  'http://localhost:3001',
 ];
 
 // Security headers
@@ -60,7 +61,7 @@ app.use(express.json());
 app.use(session({
   name: 'schedule-assistant-session',
   secret: process.env.SESSION_SECRET || 'schedule-assistant-dev-secret',
-  maxAge: 24 * 60 * 60 * 1000,
+  maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   secure: process.env.NODE_ENV === 'production',
   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
 }));

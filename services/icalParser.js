@@ -1,7 +1,7 @@
 const ical = require('node-ical');
 
 /**
- * Fetch and parse a WhenToWork (or SocialSchedules) iCal feed URL.
+ * Fetch and parse a WhenToWork iCal feed URL.
  * Returns an array of confirmed shift/schedule objects.
  */
 async function parseShiftFeed(icalUrl) {
@@ -83,7 +83,60 @@ function scheduleToCalendarEvent(schedule, timeZone = 'America/New_York') {
   };
 }
 
+/**
+ * Normalize and parse scraped W2W shifts into standard sync objects.
+ */
+function parseScrapedShifts(scraped) {
+  return scraped.map((s) => {
+    const { start, end } = parseW2WRange(s.date, s.time);
+    return {
+      id: s.id,
+      title: s.title,
+      description: s.fullText,
+      location: s.location,
+      start: start.toISOString(),
+      end: end.toISOString(),
+      status: 'CONFIRMED',
+    };
+  });
+}
+
+function parseW2WRange(dateStr, timeStr) {
+  // dateStr: "Sun Mar 29, 2026"
+  // timeStr: "1:45pm - 6:15pm"
+  const [startPart, endPart] = timeStr.split('-').map((p) => p.trim());
+
+  const start = parseW2WDateTime(dateStr, startPart);
+  const end = parseW2WDateTime(dateStr, endPart);
+
+  // If end is before start, it might cross midnight
+  if (end < start) {
+    end.setDate(end.getDate() + 1);
+  }
+
+  return { start, end };
+}
+
+function parseW2WDateTime(dateStr, timePart) {
+  // dateStr: "Sun Mar 29, 2026"
+  // timePart: "1:45pm" or "4pm"
+  const d = new Date(dateStr);
+  const match = timePart.match(/(\d{1,2})(?::(\d{2}))?(am|pm)/i);
+  if (!match) return d;
+
+  let [_, hours, mins, ampm] = match;
+  hours = parseInt(hours);
+  mins = parseInt(mins || '0');
+
+  if (ampm.toLowerCase() === 'pm' && hours < 12) hours += 12;
+  if (ampm.toLowerCase() === 'am' && hours === 12) hours = 0;
+
+  d.setHours(hours, mins, 0, 0);
+  return d;
+}
+
 module.exports = {
   parseShiftFeed,
   scheduleToCalendarEvent,
+  parseScrapedShifts,
 };

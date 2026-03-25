@@ -36,7 +36,7 @@ router.get('/check', requireAuth, async (req, res) => {
 
     if (!icalUrl) {
         return res.status(400).json({
-            error: 'No iCal URL saved. Go to Settings and paste your SocialSchedules iCal URL first.'
+            error: 'No iCal URL saved. Go to Settings and paste your WhenToWork iCal URL first.'
         });
     }
 
@@ -63,7 +63,7 @@ router.get('/check', requireAuth, async (req, res) => {
             });
         }
 
-        // Index SocialSchedules shifts by title::date key
+        // Index WhenToWork shifts by title::date key
         const shiftMap = new Map();
         for (const shift of shifts) {
             const key = makeKey(shift.title, shift.start);
@@ -71,8 +71,8 @@ router.get('/check', requireAuth, async (req, res) => {
         }
 
         const synced = [];
-        const missing = []; // In SocialSchedules but NOT in GCal
-        const orphaned = []; // In GCal but NOT in SocialSchedules
+        const missing = []; // In WhenToWork but NOT in GCal
+        const orphaned = []; // In GCal but NOT in WhenToWork
 
         // Check each shift
         for (const [key, shift] of shiftMap) {

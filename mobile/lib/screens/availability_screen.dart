@@ -15,7 +15,7 @@ class AvailabilityScreen extends ConsumerWidget {
     final preferences = ref.watch(availabilityProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0C0C0E),
+      backgroundColor: const Color(0xFF0B1120),
       body: Stack(
         children: [
           // Background Gradient Orbs
@@ -27,7 +27,7 @@ class AvailabilityScreen extends ConsumerWidget {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFFDBB2D).withOpacity(0.05),
+                color: const Color(0xFF6366F1).withOpacity(0.06),
               ),
             ),
           ).animate().fadeIn(duration: 2.seconds).scale(begin: const Offset(0.8, 0.8)),
@@ -40,7 +40,7 @@ class AvailabilityScreen extends ConsumerWidget {
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF22C55E).withOpacity(0.03),
+                color: const Color(0xFF10B981).withOpacity(0.04),
               ),
             ),
           ).animate().fadeIn(duration: 3.seconds),
@@ -72,13 +72,6 @@ class AvailabilityScreen extends ConsumerWidget {
             ),
           ),
           
-          // Bottom Navigation / Action Bar (Floating)
-          Positioned(
-            bottom: 24,
-            left: 24,
-            right: 24,
-            child: _buildFloatingActionMenu(),
-          ),
         ],
       ),
     );
@@ -93,12 +86,12 @@ class AvailabilityScreen extends ConsumerWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.hive_outlined, color: Color(0xFFFDBB2D), size: 16),
+                const Icon(Icons.dashboard_rounded, color: Color(0xFF6366F1), size: 16),
                 const SizedBox(width: 8),
                 Text(
-                  'MISSION CONTROL',
+                  'ENTERPRISE CONTROL',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: const Color(0xFFFDBB2D).withOpacity(0.8),
+                    color: const Color(0xFF6366F1).withOpacity(0.8),
                     letterSpacing: 3,
                     fontWeight: FontWeight.bold,
                   ),
@@ -116,7 +109,7 @@ class AvailabilityScreen extends ConsumerWidget {
               const TextSpan(text: 'Your '),
               TextSpan(
                 text: 'Schedule',
-                style: TextStyle(color: const Color(0xFFFDBB2D).withOpacity(0.9)),
+                style: TextStyle(color: const Color(0xFF6366F1).withOpacity(0.9)),
               ),
             ],
           ),
@@ -138,12 +131,12 @@ class AvailabilityScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF22C55E).withOpacity(0.1),
+        color: const Color(0xFF10B981).withOpacity(0.12),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: const Color(0xFF22C55E).withOpacity(0.2)),
+        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF22C55E).withOpacity(0.05),
+            color: const Color(0xFF10B981).withOpacity(0.05),
             blurRadius: 10,
             spreadRadius: 1,
           ),
@@ -164,9 +157,9 @@ class AvailabilityScreen extends ConsumerWidget {
            .fadeOut(),
           const SizedBox(width: 8),
           const Text(
-            'ACTIVE',
+            'SYNCHRONIZED',
             style: TextStyle(
-              color: Color(0xFF22C55E),
+              color: Color(0xFF10B981),
               fontSize: 10,
               fontWeight: FontWeight.w800,
               letterSpacing: 1,
@@ -228,7 +221,7 @@ class AvailabilityScreen extends ConsumerWidget {
                         Text(
                           preference.isClosed ? 'Available All Day' : '${preference.blocks.length} SCHEDULED BLOCKS',
                           style: TextStyle(
-                            color: preference.isClosed ? const Color(0xFF22C55E).withOpacity(0.6) : Colors.white.withOpacity(0.3),
+                            color: preference.isClosed ? const Color(0xFF10B981).withOpacity(0.6) : Colors.white.withOpacity(0.3),
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1,
@@ -266,7 +259,7 @@ class AvailabilityScreen extends ConsumerWidget {
       ),
       child: Icon(
         preference.isClosed ? Icons.check_circle_outline : Icons.calendar_today_outlined,
-        color: preference.isClosed ? const Color(0xFF22C55E) : Colors.white.withOpacity(0.5),
+        color: preference.isClosed ? const Color(0xFF10B981) : Colors.white.withOpacity(0.5),
         size: 18,
       ),
     );
@@ -278,82 +271,27 @@ class AvailabilityScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFFFDBB2D).withOpacity(0.15),
-            const Color(0xFFFDBB2D).withOpacity(0.05),
+            const Color(0xFF6366F1).withOpacity(0.15),
+            const Color(0xFF6366F1).withOpacity(0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFFDBB2D).withOpacity(0.2)),
+        border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.access_time_filled, color: Color(0xFFFDBB2D), size: 10),
+          const Icon(Icons.access_time_filled, color: Color(0xFF6366F1), size: 10),
           const SizedBox(width: 6),
           Text(
             block.formattedRange,
             style: const TextStyle(
-              color: Color(0xFFFDBB2D),
+              color: Color(0xFF6366F1),
               fontSize: 11,
               fontWeight: FontWeight.bold,
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFloatingActionMenu() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(32),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-          height: 64,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavIcon(FontAwesomeIcons.house, true),
-              _buildNavIcon(FontAwesomeIcons.calendarCheck, false),
-              _buildNavIcon(FontAwesomeIcons.arrowsRotate, false, isSpecial: true),
-              _buildNavIcon(FontAwesomeIcons.comments, false),
-              _buildNavIcon(FontAwesomeIcons.gear, false),
-            ],
-          ),
-        ),
-      ),
-    ).animate().slideY(begin: 1, duration: 800.ms, curve: Curves.easeOutCubic);
-  }
-
-  Widget _buildNavIcon(IconData icon, bool isActive, {bool isSpecial = false}) {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: isSpecial ? BoxDecoration(
-        color: const Color(0xFFFDBB2D),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFFDBB2D).withOpacity(0.3),
-            blurRadius: 15,
-            spreadRadius: 2,
-          ),
-        ],
-      ) : null,
-      child: Center(
-        child: FaIcon(
-          icon,
-          color: isSpecial 
-            ? Colors.black 
-            : (isActive ? const Color(0xFFFDBB2D) : Colors.white.withOpacity(0.3)),
-          size: 20,
-        ),
       ),
     );
   }

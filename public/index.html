@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Schedule Assistant | Premium Schedule Sync</title>
+  <title>W2W Sync | Enterprise Schedule Assistant</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="manifest.json" />
   <link rel="shortcut icon" href="https://img.icons8.com/color/48/bee.png" type="image/x-icon">
@@ -105,9 +105,17 @@
           <!-- JS rendered cards -->
           <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 4rem;">
             <h2 style="margin-bottom: 1rem;">Welcome to Schedule Assistant</h2>
-            <p class="text-muted" style="max-width: 500px; margin: 0 auto 2rem;">Connect your WhenToWork iCal feed
-              and your shifts will magically appear here, ready for Google Calendar sync.</p>
-            <button class="btn btn-secondary" onclick="showSection('settings')">Configure iCal Feed</button>
+            <p class="text-muted" style="max-width: 500px; margin: 0 auto 2rem;">
+              Manage your WhenToWork shifts and sync them to Google Calendar. 
+              <br><br>
+              <strong>No iCal? No problem.</strong> Use our browser extension to "grab" shifts directly from your WhenToWork page.
+            </p>
+            <div id="welcome-actions">
+              <button class="btn btn-primary" onclick="loginWithGoogle()" id="btn-login-main">Sign in with Google</button>
+            </div>
+            <div id="welcome-configured-actions" class="hidden">
+                <button class="btn btn-secondary" onclick="showSection('settings')">Configure iCal Feed</button>
+            </div>
           </div>
         </div>
 
@@ -177,7 +185,7 @@
         <div class="card">
           <div style="display:flex; align-items:center; gap: 1rem; margin-bottom: 1.5rem;">
             <div
-              style="width: 40px; height: 40px; background: var(--primary); border-radius: 10px; display:flex; align-items:center; justify-content:center; color: #000; font-size: 1.25rem;">
+              style="width: 40px; height: 40px; background: var(--primary); border-radius: 10px; display:flex; align-items:center; justify-content:center; color: #fff; font-size: 1.25rem;">
               ℹ️</div>
             <div>
               <h4 style="margin:0">W2W Click Guide</h4>

@@ -65,7 +65,7 @@ router.get('/status', (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
-  req.session.destroy();
+  req.session = null;
   res.json({ success: true });
 });
 

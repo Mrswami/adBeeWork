@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const syncBtn = document.getElementById('sync-btn');
     const rescanLink = document.getElementById('rescan-link');
 
-    const LOCAL_URL = 'http://localhost:3000';
+    const LOCAL_3000 = 'http://localhost:3000';
+    const LOCAL_3001 = 'http://localhost:3001';
     const PROD_URL = 'https://scheduleassistant-735d8.web.app';
 
     async function updateStatus() {
@@ -44,14 +45,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         syncBtn.innerText = "Syncing...";
         syncBtn.disabled = true;
 
-        let baseUrl = LOCAL_URL;
+        let baseUrl = LOCAL_3001; // Default to 3001
+        console.log("🐝 Attempting to connect to dashboard...");
 
-        // Quick check if local is running
+        // Check 3000 then 3001 then Prod
         try {
-            const check = await fetch(LOCAL_URL + '/auth/status', { signal: AbortSignal.timeout(1000) });
-            if (!check.ok) throw new Error();
+            const check3000 = await fetch(LOCAL_3000 + '/auth/status', { signal: AbortSignal.timeout(500) });
+            if (check3000.ok) {
+                baseUrl = LOCAL_3000;
+                console.log("🐝 Connected to port 3000");
+            } else {
+                throw new Error();
+            }
         } catch (e) {
-            baseUrl = PROD_URL;
+            try {
+                const check3001 = await fetch(LOCAL_3001 + '/auth/status', { signal: AbortSignal.timeout(500) });
+                if (check3001.ok) {
+                    baseUrl = LOCAL_3001;
+                    console.log("🐝 Connected to port 3001");
+                } else {
+                    throw new Error();
+                }
+            } catch (e2) {
+                baseUrl = PROD_URL;
+                console.log("🐝 Local not found, falling back to PROD");
+            }
         }
 
         try {

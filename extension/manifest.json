@@ -10,37 +10,33 @@
         "tabs"
     ],
     "host_permissions": [
-        "https://app.socialschedules.com/*",
         "https://*.adp.com/*",
         "http://localhost:3000/*",
-        "https://scheduleassistant-735d8.web.app/*"
+        "http://localhost:3001/*",
+        "https://scheduleassistant-735d8.web.app/*",
+        "https://*.whentowork.com/*"
     ],
     "action": {
         "default_icon": "icon.svg",
-        "default_title": "Open Schedule Assistant Dashboard"
+        "default_title": "Open Schedule Assistant Dashboard",
+        "default_popup": "popup.html"
     },
     "icons": {
         "48": "icon.svg",
         "128": "icon.svg"
     },
-    "sidebar_action": {
-        "default_panel": "sidebar.html",
-        "default_icon": "icon.svg"
-    },
     "side_panel": {
         "default_path": "sidebar.html"
     },
     "background": {
-        "scripts": [
-            "background.js"
-        ],
+        "service_worker": "background.js",
         "type": "module"
     },
     "content_scripts": [
         {
             "matches": [
-                "https://app.socialschedules.com/*",
-                "https://*.adp.com/*"
+                "https://*.adp.com/*",
+                "https://*.whentowork.com/*"
             ],
             "js": [
                 "content.js"

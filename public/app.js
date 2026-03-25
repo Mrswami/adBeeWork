@@ -125,12 +125,16 @@ async function checkAuth() {
 
     if (isAuthenticated && data.user) {
       updateSidebarUserInfo(data.user);
+      document.getElementById('welcome-actions').classList.add('hidden');
+      document.getElementById('welcome-configured-actions').classList.remove('hidden');
       await loadCalendars();
       await loadSavedUrl();
       await loadHistory();
     } else {
       document.getElementById('btn-login-sidebar').classList.remove('hidden');
       document.getElementById('user-info-sidebar').classList.add('hidden');
+      document.getElementById('welcome-actions').classList.remove('hidden');
+      document.getElementById('welcome-configured-actions').classList.add('hidden');
     }
   } catch (err) {
     console.error('Auth check error:', err);
@@ -160,39 +164,46 @@ async function loadSavedUrl() {
   try {
     const res = await fetch('/api/schedules/saved-url');
     const data = await res.json();
-    if (data.url) document.getElementById('ical-url').value = data.url;
+    if (data.url) {
+      document.getElementById('ical-url').value = data.url;
+      await saveAndFetch();
+    } else if (data.scrapedCount > 0) {
+      console.log(`🐝 ${data.scrapedCount} scraped shifts ready. Fetching...`);
+      await saveAndFetch();
+    }
   } catch (err) { }
 }
 
 async function saveAndFetch() {
-  if (!isAuthenticated) { showToast('Please sign in first!', 'error'); return; }
-
   const url = document.getElementById('ical-url').value.trim();
-  if (!url) {
-    showSection('settings');
-    showToast('Add your iCal URL in settings', 'error');
-    return;
-  }
-
+  
   showLoading('Fetching your schedules...');
   try {
-    // Save URL
-    await fetch('/api/schedules/save-url', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url })
-    });
+    if (url) {
+      // Save URL
+      await fetch('/api/schedules/save-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+    }
 
-    // Fetch shifts
-    const res = await fetch(`/api/schedules?url=${encodeURIComponent(url)}`);
+    // Fetch shifts (will return scraped if no url)
+    const fetchUrl = url ? `/api/schedules?url=${encodeURIComponent(url)}` : '/api/schedules';
+    const res = await fetch(fetchUrl);
     const data = await res.json();
 
     if (res.ok) {
       schedules = data.schedules;
       renderSchedules(schedules);
       showSection('shifts');
-      showToast(`Loaded ${schedules.length} shifts!`, 'success');
+      const source = data.source === 'scraped' ? 'via Extension' : 'via iCal';
+      showToast(`Loaded ${schedules.length} shifts ${source}!`, 'success');
     } else {
+      if (!url) {
+        showSection('settings');
+        throw new Error('No iCal URL and no scraped shifts found. Use the extension to grab shifts.');
+      }
       throw new Error(data.error || 'Failed to fetch schedules');
     }
   } catch (err) {
@@ -213,11 +224,11 @@ function renderSchedules(items) {
 
   document.getElementById('sync-action-container').classList.remove('hidden');
 
-  // Always start from today, show 7 days forward
+  // Always start from today, show 30 days forward
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const days = Array.from({ length: 7 }, (_, i) => {
+  const days = Array.from({ length: 30 }, (_, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
     return d;
@@ -300,15 +311,47 @@ async function runSync() {
     const data = await res.json();
 
     if (res.ok) {
-      showToast(`Successfully synced ${data.synced} shifts!`, 'success');
-      // Mark as synced in UI
-      (data.details?.synced || []).forEach(s => {
-        const el = document.getElementById('shift-' + s.id);
-        if (el) {
-          el.classList.add('synced');
-          el.classList.remove('selected');
-        }
-      });
+      showToast(`Successfully processed ${data.total} shifts!`, 'success');
+      
+      // Update UI with detailed results
+      if (data.details) {
+        // 1. Synced
+        (data.details.synced || []).forEach(s => {
+          const el = document.getElementById('shift-' + s.id);
+          if (el) {
+            el.classList.add('synced');
+            el.classList.remove('selected', 'skipped', 'failed');
+            if (!el.querySelector('.shift-status-badge')) {
+              el.innerHTML += `<div class="shift-status-badge synced">✅ Synced</div>`;
+            }
+          }
+        });
+        
+        // 2. Skipped (Duplicates)
+        (data.details.skipped || []).forEach(s => {
+          const el = document.getElementById('shift-' + s.id);
+          if (el) {
+            el.classList.add('skipped');
+            el.classList.remove('selected', 'synced', 'failed');
+            if (!el.querySelector('.shift-status-badge')) {
+              el.innerHTML += `<div class="shift-status-badge skipped">⏭ Skipped</div>`;
+            }
+          }
+        });
+
+        // 3. Failed
+        (data.details.failed || []).forEach(s => {
+          const el = document.getElementById('shift-' + s.id);
+          if (el) {
+            el.classList.add('failed');
+            el.classList.remove('selected', 'synced', 'skipped');
+            if (!el.querySelector('.shift-status-badge')) {
+              el.innerHTML += `<div class="shift-status-badge failed">❌ Failed</div>`;
+            }
+          }
+        });
+      }
+      
       await loadHistory();
     } else {
       throw new Error(data.error || 'Sync failed');

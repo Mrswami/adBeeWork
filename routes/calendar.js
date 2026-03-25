@@ -7,9 +7,10 @@ const {
   deleteCalendarEvent,
   checkEventExists,
 } = require('../services/googleCalendar');
-const { parseSocialSchedulesFeed, scheduleToCalendarEvent } = require('../services/icalParser');
+const { parseShiftFeed, scheduleToCalendarEvent, parseScrapedShifts } = require('../services/icalParser');
 const { recordSync, saveUserSettings } = require('../services/firebase');
 const { sendMessage } = require('../services/groupme');
+const { getTempShifts } = require('./schedules'); // We'll add this export
 
 function requireAuth(req, res, next) {
   if (!req.session.tokens) {
@@ -51,22 +52,46 @@ router.post('/sync', requireAuth, async (req, res) => {
   } = req.body;
 
   const urlToUse = icalUrl || req.session.icalUrl;
-  if (!urlToUse) {
-    return res.status(400).json({ error: 'No iCal URL provided.' });
-  }
-
+  
   try {
-    const schedules = await parseSocialSchedulesFeed(urlToUse);
+    let schedules;
+    if (urlToUse) {
+      console.log('🐝 Fetching shifts from iCal URL...');
+      schedules = await parseShiftFeed(urlToUse);
+    } else {
+      const activeScraped = req.session.scrapedShifts || getTempShifts();
+      if (activeScraped && activeScraped.length > 0) {
+        console.log(`🐝 Using ${activeScraped.length} scraped shifts from session/fallback.`);
+        schedules = parseScrapedShifts(activeScraped);
+      } else {
+        console.error('🐝 No shifts found for sync!');
+        return res.status(400).json({ error: 'No iCal URL and no scraped shifts found. Use the extension to grab shifts first.' });
+      }
+    }
+
     const toSync = selectedIds
       ? schedules.filter((s) => selectedIds.includes(s.id))
       : schedules;
 
     const results = { synced: [], skipped: [], failed: [] };
+    console.log(`🐝 Syncing ${toSync.length} shifts to Google Calendar...`);
+    console.log(`🐝 IDs to sync: ${JSON.stringify(toSync.map(s => s.id))}`);
 
+    const processedInRequest = new Set();
+    
     for (const schedule of toSync) {
       try {
+        const uniqueKey = `${schedule.title}::${new Date(schedule.start).getTime()}`;
+        if (processedInRequest.has(uniqueKey)) {
+          console.log(`🐝 Skipping duplicate in same request: ${schedule.title}`);
+          results.skipped.push({ id: schedule.id, title: schedule.title, reason: 'Duplicate in request' });
+          continue;
+        }
+
+        console.log(`🐝 Processing sync for: ${schedule.title} (${schedule.start})`);
         const exists = await checkEventExists(req.session.tokens, schedule.title, schedule.start);
         if (exists) {
+          console.log(`🐝 Skipping existing shift: ${schedule.title}`);
           results.skipped.push({ id: schedule.id, title: schedule.title, reason: 'Already exists' });
           continue;
         }
@@ -79,6 +104,8 @@ router.post('/sync', requireAuth, async (req, res) => {
           calendarId
         );
 
+        processedInRequest.add(uniqueKey);
+        console.log(`🐝 Successfully synced: ${schedule.title}`);
         results.synced.push({
           id: schedule.id,
           title: schedule.title,
@@ -86,6 +113,7 @@ router.post('/sync', requireAuth, async (req, res) => {
           gcalLink: created.htmlLink,
         });
       } catch (eventErr) {
+        console.error(`🐝 Failed to sync ${schedule.title}:`, eventErr.message);
         results.failed.push({ id: schedule.id, title: schedule.title, error: eventErr.message });
       }
     }

@@ -91,6 +91,7 @@ async function createCalendarEvent(tokens, eventData, notifySelf = false, calend
     reminders: {
       useDefault: true,
     },
+    colorId: '11', // Tomato (Red)
   };
 
   if (eventData.location) {
@@ -123,21 +124,26 @@ async function checkEventExists(tokens, title, startDateTime) {
   const auth = getAuthorizedClient(tokens);
   const calendar = google.calendar({ version: 'v3', auth });
 
-  const timeMin = new Date(startDateTime);
-  timeMin.setMinutes(timeMin.getMinutes() - 1);
-
-  const timeMax = new Date(startDateTime);
-  timeMax.setMinutes(timeMax.getMinutes() + 1);
+  const start = new Date(startDateTime);
+  const timeMin = new Date(start.getTime() - 5 * 60000); // 5 mins before
+  const timeMax = new Date(start.getTime() + 5 * 60000); // 5 mins after
 
   const res = await calendar.events.list({
     calendarId: 'primary',
     timeMin: timeMin.toISOString(),
     timeMax: timeMax.toISOString(),
-    q: title,
     singleEvents: true,
   });
 
-  return (res.data.items || []).length > 0;
+  const events = res.data.items || [];
+  
+  // Precise manual match on title and time (ignoring seconds/ms)
+  return events.some(event => {
+    const eventTime = new Date(event.start.dateTime || event.start.date);
+    const timeMatches = Math.abs(eventTime.getTime() - start.getTime()) < 60000; // Within 1 min
+    const titleMatches = event.summary.trim().toLowerCase() === title.trim().toLowerCase();
+    return timeMatches && titleMatches;
+  });
 }
 
 module.exports = {
