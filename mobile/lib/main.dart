@@ -159,7 +159,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final List<Widget> _screens = [
     const AvailabilityScreen(),
     const ShiftsScreen(),
-    const _SyncScreen(),
     const _SettingsScreen(),
   ];
 
@@ -186,8 +185,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     });
     
     // Check for section-specific tips
-    if (index == 1) _checkFirstTime('shifts', 'This view tracks your Google Calendar. "Red Tomato" shifts are your confirmed work hours.');
-    if (index == 2) _checkFirstTime('sync', 'You can force a manual sync here if the automatic hive heartbeat feels too slow.');
+    if (index == 1) _checkFirstTime('shifts', 'Your Workload is now smart-categorized! Toggle a manual sync if the CyberBee is napping.');
   }
 
   @override
@@ -209,9 +207,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 message: _activeTip!,
                 onDismiss: () {
                   setState(() => _activeTip = null);
-                  // We could mark it seen here, but usually, seeing it appear is enough.
-                  // Let's mark it seen so it doesn't nag.
-                  String key = _selectedIndex == 0 ? 'home' : (_selectedIndex == 1 ? 'shifts' : 'sync');
+                  String key = _selectedIndex == 0 ? 'home' : (_selectedIndex == 1 ? 'shifts' : 'settings');
                   OnboardingManager.instance.markSeen(key);
                 },
               ),
@@ -235,109 +231,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.calendar_month_rounded), label: 'Shifts'),
-            BottomNavigationBarItem(icon: Icon(Icons.sync_rounded), label: 'Sync'),
+            BottomNavigationBarItem(icon: Icon(Icons.calendar_month_rounded), label: 'Workload'),
             BottomNavigationBarItem(icon: Icon(Icons.settings_rounded), label: 'Settings'),
-          ],
-        ),
-      ),
-    );
-  }
-}
-class _SyncScreen extends StatefulWidget {
-  const _SyncScreen();
-
-  @override
-  State<_SyncScreen> createState() => _SyncScreenState();
-}
-
-class _SyncScreenState extends State<_SyncScreen> {
-  bool _isSyncing = false;
-  bool _isSynced = false;
-
-  void _performSync() async {
-    setState(() => _isSyncing = true);
-    await Future.delayed(const Duration(seconds: 2)); // Simulate sync
-    if (mounted) {
-      setState(() {
-        _isSyncing = false;
-        _isSynced = true;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sync Successful! Your calendar is up to date.'),
-          backgroundColor: Color(0xFF10B981),
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0B1120),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: (_isSynced ? const Color(0xFF10B981) : const Color(0xFF6366F1)).withOpacity(0.2),
-                    blurRadius: 30,
-                    spreadRadius: 5,
-                  ),
-                ],
-              ),
-              child: ClipOval(
-                child: Image.asset(
-                  'assets/assistant.png',
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text(_isSynced ? 'CyberBee: Hives Aligned' : 'CyberBee Sync Active', 
-              style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(_isSynced ? 'Success! Google Calendar is synchronized.' : 'Connected to WhenToWork Bridge', 
-              style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
-            const SizedBox(height: 48),
-            if (!_isSynced) 
-              ElevatedButton.icon(
-                onPressed: _isSyncing ? null : _performSync,
-                icon: _isSyncing 
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Icon(Icons.refresh),
-                label: Text(_isSyncing ? 'SYNCING...' : 'SYNC NOW'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6366F1),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-              )
-            else
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
-                    SizedBox(width: 8),
-                    Text('SYNCED & SECURE', style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.w800, fontSize: 12)),
-                  ],
-                ),
-              ),
           ],
         ),
       ),
